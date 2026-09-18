@@ -369,8 +369,8 @@ function AdminDashboard() {
     <Box
       sx={{
         minHeight: '100vh',
-        py: { xs: 2, sm: 3 },
-        px: 2,
+        py: { xs: 1, sm: 3 },
+        px: { xs: 1, sm: 2 },
         position: 'relative',
         background:
           'radial-gradient(circle at top, #fffaf4 0%, #f6efe6 45%, #eee1d2 100%)',
@@ -394,12 +394,15 @@ function AdminDashboard() {
         ॐ
       </Box>
 
-      <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 1 }}>
+      <Container
+        maxWidth="xl"
+        sx={{ position: 'relative', zIndex: 1, px: { xs: 0.5, sm: 2 } }}
+      >
         <Paper
           elevation={0}
           sx={{
-            p: { xs: 1.75, sm: 2.25 },
-            mb: 2,
+            p: { xs: 1, sm: 2.25 },
+            mb: { xs: 1, sm: 2 },
             borderRadius: 2.5,
             border: '1px solid',
             borderColor: 'divider',
@@ -410,28 +413,29 @@ function AdminDashboard() {
           <Box
             sx={{
               display: 'flex',
-              flexDirection: { xs: 'column', sm: 'row' },
+              flexDirection: 'row',
               justifyContent: 'space-between',
-              alignItems: { xs: 'stretch', sm: 'center' },
-              gap: 1.5,
+              alignItems: 'center',
+              gap: 1,
             }}
           >
             <Box
-              sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}
+              sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.75, sm: 1.5 } }}
             >
               <Box
                 sx={{
-                  width: 44,
-                  height: 44,
+                  width: { xs: 32, sm: 44 },
+                  height: { xs: 32, sm: 44 },
                   borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   background: 'linear-gradient(145deg, #b96b13, #7c3907)',
                   color: '#fff8e8',
-                  fontSize: 20,
+                  fontSize: { xs: 14, sm: 20 },
                   fontWeight: 700,
-                  boxShadow: '0 6px 14px rgba(126, 64, 13, 0.25)',
+                  boxShadow: '0 4px 10px rgba(126, 64, 13, 0.25)',
+                  flexShrink: 0,
                 }}
               >
                 ॐ
@@ -442,12 +446,20 @@ function AdminDashboard() {
                   sx={{
                     fontWeight: 800,
                     color: 'primary.dark',
-                    lineHeight: 1.2,
+                    lineHeight: 1.15,
+                    fontSize: { xs: '0.85rem', sm: '1.25rem' },
                   }}
                 >
                   अ‍ॅडमिन डॅशबोर्ड
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{
+                    display: { xs: 'none', sm: 'block' },
+                    fontSize: '0.7rem',
+                  }}
+                >
                   गणेशमूर्ती मंडळ माहिती नोंदणी २०२६
                 </Typography>
               </Box>
@@ -455,7 +467,7 @@ function AdminDashboard() {
             <Box
               sx={{
                 display: 'flex',
-                gap: 1,
+                gap: { xs: 0.5, sm: 1 },
                 alignItems: 'center',
                 flexWrap: 'wrap',
               }}
@@ -465,9 +477,24 @@ function AdminDashboard() {
                 startIcon={<AddIcon />}
                 variant="contained"
                 onClick={openAdd}
-                sx={{ fontWeight: 700, px: 2 }}
+                sx={{
+                  fontWeight: 700,
+                  px: { xs: 1, sm: 2 },
+                  py: { xs: 0.5, sm: 0.75 },
+                  fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                  minWidth: 0,
+                  '& .MuiButton-startIcon': {
+                    mr: { xs: 0, sm: 0.5 },
+                    ml: { xs: 0, sm: -0.5 },
+                  },
+                }}
               >
-                नवीन नोंद
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                  नवीन नोंद
+                </Box>
+                <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>
+                  नवीन
+                </Box>
               </Button>
               <Tooltip title="लॉगआउट">
                 <IconButton
@@ -477,9 +504,11 @@ function AdminDashboard() {
                   sx={{
                     border: '1px solid',
                     borderColor: 'error.main',
+                    width: { xs: 30, sm: 36 },
+                    height: { xs: 30, sm: 36 },
                   }}
                 >
-                  <LogoutIcon fontSize="small" />
+                  <LogoutIcon sx={{ fontSize: { xs: 14, sm: 18 } }} />
                 </IconButton>
               </Tooltip>
             </Box>
@@ -489,37 +518,50 @@ function AdminDashboard() {
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: {
-              xs: '1fr',
-              sm: 'repeat(3, 1fr)',
-            },
-            gap: 1.5,
-            mb: 2,
+            gridTemplateColumns: { xs: 'repeat(3, 1fr)', sm: 'repeat(3, 1fr)' },
+            gap: { xs: 0.5, sm: 1.5 },
+            mb: { xs: 1, sm: 2 },
           }}
         >
           <Card
             sx={{
-              borderRadius: 2.5,
+              borderRadius: 2,
               border: '1px solid',
               borderColor: 'divider',
             }}
           >
             <CardContent
-              sx={{ py: 1.5, px: 2, '&:last-child': { pb: 1.5 } }}
+              sx={{
+                py: { xs: 0.75, sm: 1.5 },
+                px: { xs: 0.75, sm: 2 },
+                '&:last-child': { pb: { xs: 0.75, sm: 1.5 } },
+                textAlign: { xs: 'center', sm: 'left' },
+              }}
             >
               <Typography
                 variant="caption"
                 color="text.secondary"
-                sx={{ fontWeight: 700, letterSpacing: 0.5 }}
+                sx={{
+                  fontWeight: 700,
+                  letterSpacing: 0.3,
+                  fontSize: { xs: '0.55rem', sm: '0.75rem' },
+                  display: 'block',
+                  lineHeight: 1.1,
+                }}
               >
                 एकूण नोंदी
               </Typography>
               <Typography
                 variant="h5"
-                sx={{ fontWeight: 800, mt: 0.5, lineHeight: 1 }}
+                sx={{
+                  fontWeight: 800,
+                  mt: { xs: 0.25, sm: 0.5 },
+                  lineHeight: 1,
+                  fontSize: { xs: '1rem', sm: '1.5rem' },
+                }}
               >
                 {loading ? (
-                  <CircularProgress size={20} />
+                  <CircularProgress size={14} />
                 ) : (
                   toMarathiNumber(counts.total)
                 )}
@@ -528,32 +570,44 @@ function AdminDashboard() {
           </Card>
           <Card
             sx={{
-              borderRadius: 2.5,
+              borderRadius: 2,
               border: '1px solid',
               borderColor: 'divider',
             }}
           >
             <CardContent
-              sx={{ py: 1.5, px: 2, '&:last-child': { pb: 1.5 } }}
+              sx={{
+                py: { xs: 0.75, sm: 1.5 },
+                px: { xs: 0.75, sm: 2 },
+                '&:last-child': { pb: { xs: 0.75, sm: 1.5 } },
+                textAlign: { xs: 'center', sm: 'left' },
+              }}
             >
               <Typography
                 variant="caption"
                 color="text.secondary"
-                sx={{ fontWeight: 700, letterSpacing: 0.5 }}
+                sx={{
+                  fontWeight: 700,
+                  letterSpacing: 0.3,
+                  fontSize: { xs: '0.55rem', sm: '0.75rem' },
+                  display: 'block',
+                  lineHeight: 1.1,
+                }}
               >
-                २०२६ मध्ये मूर्ती घेतलेले
+                २०२६ मध्ये घेतलेले
               </Typography>
               <Typography
                 variant="h5"
                 sx={{
                   fontWeight: 800,
-                  mt: 0.5,
+                  mt: { xs: 0.25, sm: 0.5 },
                   lineHeight: 1,
                   color: 'primary.main',
+                  fontSize: { xs: '1rem', sm: '1.5rem' },
                 }}
               >
                 {loading ? (
-                  <CircularProgress size={20} />
+                  <CircularProgress size={14} />
                 ) : (
                   toMarathiNumber(counts.taken)
                 )}
@@ -562,32 +616,44 @@ function AdminDashboard() {
           </Card>
           <Card
             sx={{
-              borderRadius: 2.5,
+              borderRadius: 2,
               border: '1px solid',
               borderColor: 'divider',
             }}
           >
             <CardContent
-              sx={{ py: 1.5, px: 2, '&:last-child': { pb: 1.5 } }}
+              sx={{
+                py: { xs: 0.75, sm: 1.5 },
+                px: { xs: 0.75, sm: 2 },
+                '&:last-child': { pb: { xs: 0.75, sm: 1.5 } },
+                textAlign: { xs: 'center', sm: 'left' },
+              }}
             >
               <Typography
                 variant="caption"
                 color="text.secondary"
-                sx={{ fontWeight: 700, letterSpacing: 0.5 }}
+                sx={{
+                  fontWeight: 700,
+                  letterSpacing: 0.3,
+                  fontSize: { xs: '0.55rem', sm: '0.75rem' },
+                  display: 'block',
+                  lineHeight: 1.1,
+                }}
               >
-                आगामी वर्षासाठी अपेक्षित
+                आगामी अपेक्षित
               </Typography>
               <Typography
                 variant="h5"
                 sx={{
                   fontWeight: 800,
-                  mt: 0.5,
+                  mt: { xs: 0.25, sm: 0.5 },
                   lineHeight: 1,
                   color: 'secondary.main',
+                  fontSize: { xs: '1rem', sm: '1.5rem' },
                 }}
               >
                 {loading ? (
-                  <CircularProgress size={20} />
+                  <CircularProgress size={14} />
                 ) : (
                   toMarathiNumber(counts.upcoming)
                 )}
@@ -599,8 +665,8 @@ function AdminDashboard() {
         <Paper
           elevation={0}
           sx={{
-            p: { xs: 1.5, sm: 2 },
-            mb: 2,
+            p: { xs: 1, sm: 2 },
+            mb: { xs: 1, sm: 2 },
             borderRadius: 2.5,
             border: '1px solid',
             borderColor: 'divider',
@@ -610,11 +676,11 @@ function AdminDashboard() {
             sx={{
               display: 'grid',
               gridTemplateColumns: {
-                xs: '1fr',
+                xs: '1fr 1fr',
                 sm: '1fr 1fr',
                 md: '2fr 1.4fr 1fr 1fr 1fr auto auto',
               },
-              gap: 1.25,
+              gap: { xs: 0.75, sm: 1.25 },
               alignItems: 'center',
             }}
           >
@@ -624,11 +690,21 @@ function AdminDashboard() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               fullWidth
+              sx={{
+                gridColumn: { xs: 'span 2', sm: 'span 1' },
+                '& .MuiInputBase-root': {
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                  height: { xs: 34, sm: 40 },
+                },
+                '& .MuiInputBase-input': {
+                  py: { xs: 0.5, sm: 1 },
+                },
+              }}
               slotProps={{
                 input: {
                   startAdornment: (
                     <InputAdornment position="start">
-                      <SearchIcon fontSize="small" />
+                      <SearchIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />
                     </InputAdornment>
                   ),
                 },
@@ -644,6 +720,15 @@ function AdminDashboard() {
                 setFilterType(e.target.value as 'all' | InformationType)
               }
               fullWidth
+              sx={{
+                '& .MuiInputBase-root': {
+                  fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                  height: { xs: 34, sm: 40 },
+                },
+                '& .MuiInputLabel-root': {
+                  fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                },
+              }}
             >
               <MenuItem value="all">सर्व</MenuItem>
               <MenuItem value={INFORMATION_TYPES.TAKEN}>
@@ -657,10 +742,19 @@ function AdminDashboard() {
             <TextField
               type="date"
               size="small"
-              label="पासून दिनांक"
+              label="पासून"
               value={dateFrom}
               onChange={(e) => setDateFrom(e.target.value)}
               fullWidth
+              sx={{
+                '& .MuiInputBase-root': {
+                  fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                  height: { xs: 34, sm: 40 },
+                },
+                '& .MuiInputLabel-root': {
+                  fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                },
+              }}
               slotProps={{
                 inputLabel: { shrink: true },
               }}
@@ -669,10 +763,19 @@ function AdminDashboard() {
             <TextField
               type="date"
               size="small"
-              label="पर्यंत दिनांक"
+              label="पर्यंत"
               value={dateTo}
               onChange={(e) => setDateTo(e.target.value)}
               fullWidth
+              sx={{
+                '& .MuiInputBase-root': {
+                  fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                  height: { xs: 34, sm: 40 },
+                },
+                '& .MuiInputLabel-root': {
+                  fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                },
+              }}
               slotProps={{
                 inputLabel: { shrink: true },
               }}
@@ -694,14 +797,15 @@ function AdminDashboard() {
                   if (val) setSortKey(val)
                 }}
                 sx={{
-                  height: 40,
+                  height: { xs: 34, sm: 40 },
                   '& .MuiToggleButton-root': {
-                    px: 1.25,
+                    px: { xs: 0.75, sm: 1.25 },
+                    py: 0,
                     border: '1px solid',
                     borderColor: 'divider',
                     textTransform: 'none',
                     fontWeight: 700,
-                    fontSize: 12,
+                    fontSize: { xs: 10, sm: 12 },
                     '&.Mui-selected': {
                       bgcolor: 'primary.main',
                       color: '#fff',
@@ -711,14 +815,26 @@ function AdminDashboard() {
                 }}
               >
                 <ToggleButton value="newest" aria-label="Newest first">
-                  <ArrowDownwardIcon fontSize="small" />
-                  <Typography sx={{ ml: 0.5, fontSize: 12 }}>
+                  <ArrowDownwardIcon sx={{ fontSize: { xs: 14, sm: 18 } }} />
+                  <Typography
+                    sx={{
+                      ml: 0.5,
+                      fontSize: { xs: 10, sm: 12 },
+                      display: { xs: 'none', sm: 'block' },
+                    }}
+                  >
                     नवीन
                   </Typography>
                 </ToggleButton>
                 <ToggleButton value="oldest" aria-label="Oldest first">
-                  <ArrowUpwardIcon fontSize="small" />
-                  <Typography sx={{ ml: 0.5, fontSize: 12 }}>
+                  <ArrowUpwardIcon sx={{ fontSize: { xs: 14, sm: 18 } }} />
+                  <Typography
+                    sx={{
+                      ml: 0.5,
+                      fontSize: { xs: 10, sm: 12 },
+                      display: { xs: 'none', sm: 'block' },
+                    }}
+                  >
                     जुना
                   </Typography>
                 </ToggleButton>
@@ -727,11 +843,21 @@ function AdminDashboard() {
 
             <Button
               size="small"
-              startIcon={<GridOnIcon />}
+              startIcon={<GridOnIcon sx={{ fontSize: { xs: 14, sm: 18 } }} />}
               variant="outlined"
               color="success"
               onClick={handleExcel}
-              sx={{ fontWeight: 700, py: 1 }}
+              sx={{
+                fontWeight: 700,
+                py: { xs: 0.5, sm: 1 },
+                px: { xs: 0.75, sm: 2 },
+                fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                minWidth: 0,
+                '& .MuiButton-startIcon': {
+                  mr: { xs: 0.25, sm: 0.5 },
+                  ml: { xs: 0, sm: -0.5 },
+                },
+              }}
             >
               Excel
             </Button>
@@ -740,16 +866,26 @@ function AdminDashboard() {
               size="small"
               startIcon={
                 pdfLoading ? (
-                  <CircularProgress size={16} />
+                  <CircularProgress size={14} />
                 ) : (
-                  <PictureAsPdfIcon />
+                  <PictureAsPdfIcon sx={{ fontSize: { xs: 14, sm: 18 } }} />
                 )
               }
               variant="outlined"
               color="error"
               onClick={handlePdf}
               disabled={pdfLoading}
-              sx={{ fontWeight: 700, py: 1 }}
+              sx={{
+                fontWeight: 700,
+                py: { xs: 0.5, sm: 1 },
+                px: { xs: 0.75, sm: 2 },
+                fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                minWidth: 0,
+                '& .MuiButton-startIcon': {
+                  mr: { xs: 0.25, sm: 0.5 },
+                  ml: { xs: 0, sm: -0.5 },
+                },
+              }}
             >
               {pdfLoading ? 'PDF...' : 'PDF'}
             </Button>
@@ -757,7 +893,11 @@ function AdminDashboard() {
 
           {(dateFrom || dateTo) && (
             <Box
-              sx={{ mt: 1.25, display: 'flex', justifyContent: 'flex-end' }}
+              sx={{
+                mt: { xs: 0.5, sm: 1.25 },
+                display: 'flex',
+                justifyContent: 'flex-end',
+              }}
             >
               <Button
                 size="small"
@@ -769,9 +909,10 @@ function AdminDashboard() {
                 }}
                 sx={{
                   textTransform: 'none',
-                  fontSize: 12,
+                  fontSize: { xs: 10, sm: 12 },
                   fontWeight: 600,
                   color: 'text.secondary',
+                  py: 0.25,
                 }}
               >
                 ✕ दिनांक फिल्टर साफ करा
@@ -788,7 +929,7 @@ function AdminDashboard() {
           tableSize="small"
           sortOrder="newer"
           stickyHeader
-          maxHeight={600}
+          maxHeight="calc(70vh - 100px)"
           caption="गणेशमूर्ती मंडळ माहिती नोंदणी २०२६"
           emptyStateMessage="कोणतीही नोंद आढळली नाही."
           actions={{
