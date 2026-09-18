@@ -12,7 +12,7 @@ if (!supabaseUrl || !supabasePublishableKey) {
 export const supabase = createClient(supabaseUrl, supabasePublishableKey)
 
 export const BUCKET_NAME = 'ganesh-mandal-photos-2026'
-export const ADMIN_WHATSAPP = '918767739911'
+export const ADMIN_WHATSAPP = '917774855501'
 export const MAX_PHOTOS = 3
 export const MAX_FILE_SIZE = 10 * 1024 * 1024
 export const ALLOWED_FILE_TYPES = [
