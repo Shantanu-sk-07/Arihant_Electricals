@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import AddCircleOutlineIcon from "@mui/icons-material/Add";
 import {
@@ -61,16 +61,25 @@ function PublicMandalForm() {
   const [success, setSuccess] = useState(false);
   const [whatsappUrl, setWhatsappUrl] = useState("");
   const [showWhatsappFallback, setShowWhatsappFallback] = useState(false);
-  const [uploadStep, setUploadStep] = useState<
+   const [uploadStep, setUploadStep] = useState<
     "compressing" | "uploading" | "saving" | "whatsapp" | null
   >(null);
+  const successTimerRef = useRef<number | null>(null);
 
-  const methods = useForm({
+   const methods = useForm({
     defaultValues: {
       photos: [] as PhotoItem[],
       deletedPhotos: [] as unknown,
     },
   });
+
+  useEffect(() => {
+    return () => {
+      if (successTimerRef.current) {
+        window.clearTimeout(successTimerRef.current);
+      }
+    };
+  }, []);
 
   const patch = (p: Partial<FormValues>) =>
     setValues((prev) => ({ ...prev, ...p }));
@@ -194,13 +203,26 @@ function PublicMandalForm() {
       setErrors({});
       methods.reset({ photos: [], deletedPhotos: [] });
       showSnackbar("success", "माहिती यशस्वीरित्या नोंदवली गेली!");
-      const waWindow = window.open(waUrl, "_blank");
+         const waWindow = window.open(waUrl, "_blank");
       if (!waWindow) {
         setShowWhatsappFallback(true);
       } else {
         setShowWhatsappFallback(false);
         waWindow.opener = null;
       }
+
+      if (successTimerRef.current) {
+        window.clearTimeout(successTimerRef.current);
+      }
+      successTimerRef.current = window.setTimeout(() => {
+        setSuccess(false);
+        setWhatsappUrl("");
+        setShowWhatsappFallback(false);
+        setValues(initialValues);
+        setErrors({});
+        methods.reset({ photos: [], deletedPhotos: [] });
+        successTimerRef.current = null;
+      }, 3000);
     } catch (err) {
       const msg =
         err instanceof Error
@@ -587,10 +609,14 @@ function PublicMandalForm() {
                       </Box>
                     )}
 
-                    <Box
+                                  <Box
                       component="button"
                       type="button"
                       onClick={() => {
+                        if (successTimerRef.current) {
+                          window.clearTimeout(successTimerRef.current);
+                          successTimerRef.current = null;
+                        }
                         setSuccess(false);
                         setWhatsappUrl("");
                         setShowWhatsappFallback(false);
