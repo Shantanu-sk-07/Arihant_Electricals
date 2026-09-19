@@ -371,7 +371,7 @@ function PublicMandalForm() {
                     placeholder="फोटो निवडा "
                     maxFiles={3}
                     maxSizeMB={10}
-                    targetSizeKB={1500}
+                    targetSizeKB={2000}
                     compress={true}
                     cropEnabled={false}
                     cameraEnabled

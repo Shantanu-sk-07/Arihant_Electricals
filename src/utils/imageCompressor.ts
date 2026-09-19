@@ -1,3 +1,5 @@
+import imageCompression from "browser-image-compression";
+
 export interface CompressionOptions {
   maxWidth?: number;
   maxHeight?: number;
@@ -5,75 +7,39 @@ export interface CompressionOptions {
   maxSizeKB?: number;
 }
 
-const DEFAULT_OPTIONS: CompressionOptions = {
-  maxWidth: 800,
-  maxHeight: 800,
-  quality: 0.6,
-  maxSizeKB: 200,
-};
-
 export const compressImage = async (
   file: File,
-  options: CompressionOptions = DEFAULT_OPTIONS
+  options: CompressionOptions = {}
 ): Promise<File> => {
-  const { maxWidth, maxHeight, quality, maxSizeKB } = { ...DEFAULT_OPTIONS, ...options };
+  const {
+    maxWidth = 2000,
+    maxHeight = 2000,
+    maxSizeKB = 2000,
+    quality = 0.9,
+  } = options;
 
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    
-    reader.onload = (event) => {
-      const img = new Image();
-      img.src = event.target?.result as string;
-      
-      img.onload = () => {
-        let width = img.width;
-        let height = img.height;
-        
-        if (width > maxWidth!) {
-          height = (height * maxWidth!) / width;
-          width = maxWidth!;
-        }
-        
-        if (height > maxHeight!) {
-          width = (width * maxHeight!) / height;
-          height = maxHeight!;
-        }
-        
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        
-        const ctx = canvas.getContext('2d');
-        ctx?.drawImage(img, 0, 0, width, height);
-        
-        canvas.toBlob(
-          (blob) => {
-            if (blob) {
-              const compressedFile = new File([blob], file.name, {
-                type: 'image/jpeg',
-                lastModified: Date.now(),
-              });
-              
-              if (compressedFile.size > maxSizeKB! * 1024) {
-                compressImage(compressedFile, { ...options, quality: (quality || 0.6) - 0.1 }).then(resolve).catch(reject);
-              } else {
-                resolve(compressedFile);
-              }
-            } else {
-              reject(new Error('Compression failed'));
-            }
-          },
-          'image/jpeg',
-          quality
-        );
-      };
-      
-      img.onerror = () => reject(new Error('Failed to load image'));
-    };
-    
-    reader.onerror = () => reject(new Error('Failed to read file'));
-  });
+  if (file.size <= maxSizeKB * 1024) {
+    return file;
+  }
+
+  try {
+    const compressedBlob = await imageCompression(file, {
+      maxSizeMB: maxSizeKB / 1024,
+      maxWidthOrHeight: Math.max(maxWidth, maxHeight),
+      initialQuality: quality,
+      useWebWorker: true,
+      fileType: "image/jpeg",
+      maxIteration: 15,
+    });
+
+    return new File([compressedBlob], file.name, {
+      type: "image/jpeg",
+      lastModified: Date.now(),
+    });
+  } catch (error) {
+    console.error("Compression failed for", file.name, error);
+    return file;
+  }
 };
 
 export const compressMultipleImages = async (
