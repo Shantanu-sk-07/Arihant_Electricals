@@ -4,6 +4,7 @@ import {
   Alert,
   Box,
   Button,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -103,19 +104,14 @@ function AdminMandalForm({
   const patch = (p: Partial<AdminMandalFormResult>) =>
     setValues((prev) => ({ ...prev, ...p }))
 
-  const validate = (photos: PhotoItem[]): boolean => {
-    const e: FormErrors = {}
-    if (!values.mandal_name.trim()) e.mandal_name = 'मंडळाचे नाव भरा.'
-    if (photos.length === 0) e.photos = 'किमान 1 फोटो आवश्यक.'
-    if (!values.president_name.trim())
-      e.president_name = 'अध्यक्षाचे नाव भरा.'
-    if (!/^[6-9][0-9]{9}$/.test(values.president_mobile))
-      e.president_mobile = 'कृपया योग्य 10 अंकी मोबाईल नंबर टाका.'
-    if (!values.information_type)
-      e.information_type = 'माहितीचा प्रकार निवडा.'
-    setErrors(e)
-    return Object.keys(e).length === 0
-  }
+ const validate = (): boolean => {
+  const e: FormErrors = {}
+  if (!values.mandal_name.trim()) e.mandal_name = 'मंडळाचे नाव भरा.'
+  if (!/^[6-9][0-9]{9}$/.test(values.president_mobile))
+    e.president_mobile = 'कृपया योग्य 10 अंकी मोबाईल नंबर टाका.'
+  setErrors(e)
+  return Object.keys(e).length === 0
+}
 
   const uploadNewPhotos = async (files: File[]): Promise<string[]> => {
     const compressed = await compressMultipleImages(files, {
@@ -155,7 +151,8 @@ function AdminMandalForm({
     const rawPhotos =
       (methods.getValues('photos') as PhotoItem[] | undefined) ?? []
 
-    if (!validate(rawPhotos)) return
+  
+if (!validate()) return 
 
     setSaving(true)
     try {
@@ -295,8 +292,8 @@ function AdminMandalForm({
                     placeholder="फोटो निवडा "
                     maxFiles={3}
                     maxSizeMB={10}
-                    targetSizeKB={500}
-                    compress={false}
+                    targetSizeKB={800}
+                    compress={true}
                     cropEnabled={false}
                     cameraEnabled
                     size="small"
@@ -363,24 +360,20 @@ function AdminMandalForm({
       </DialogContent>
       <Divider />
       <DialogActions sx={{ p: 2.5 }}>
-        <Button
-          onClick={onClose}
-          variant="outlined"
-          disabled={saving}
-        >
-          रद्द करा
-        </Button>
-        <Button
-          onClick={handleSave}
-          variant="contained"
-          disabled={saving}
-        >
-          {saving
-            ? 'सेव्ह होत आहे...'
-            : mode === 'add'
-              ? 'जोडा'
-              : 'सेव्ह करा'}
-        </Button>
+       <Button
+  onClick={handleSave}
+  variant="contained"
+  disabled={saving}
+  startIcon={
+    saving ? <CircularProgress size={16} color="inherit" /> : null
+  }
+>
+  {saving
+    ? 'कृपया थांबा...'
+    : mode === 'add'
+      ? 'जोडा'
+      : 'सेव्ह करा'}
+</Button>
       </DialogActions>
     </Dialog>
   )

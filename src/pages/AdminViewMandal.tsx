@@ -381,68 +381,74 @@ function AdminViewMandal({
 
       <Divider />
 
-      <DialogActions
-        sx={{
-          p: { xs: 1.5, sm: 2.5 },
-          display: 'flex',
-          flexDirection: { xs: 'column-reverse', sm: 'row' },
-          justifyContent: { xs: 'stretch', sm: 'space-between' },
-          alignItems: 'stretch',
-          gap: { xs: 1, sm: 1.5 },
-        }}
-      >
-        <Button
-          onClick={() => onDelete(record)}
-          variant="outlined"
-          color="error"
-          startIcon={<DeleteIcon />}
-          disabled={loading}
-          fullWidth
-          sx={{
-            fontWeight: 700,
-            textTransform: 'none',
-            width: { xs: '100%', sm: 'auto' },
-            order: { xs: 3, sm: 1 },
-          }}
-        >
-          Delete
-        </Button>
+    <DialogActions
+  sx={{
+    p: { xs: 1.5, sm: 2.5 },
+    display: 'flex',
+    flexDirection: { xs: 'column-reverse', sm: 'row' },
+    justifyContent: { xs: 'stretch', sm: 'space-between' },
+    alignItems: 'stretch',
+    gap: { xs: 1, sm: 1.5 },
+  }}
+>
+  <Button
+    onClick={() => onDelete(record)}
+    variant="outlined"
+    color="error"
+    startIcon={
+      loading ? (
+        <CircularProgress size={16} color="inherit" />
+      ) : (
+        <DeleteIcon />
+      )
+    }
+    disabled={loading}
+    fullWidth
+    sx={{
+      fontWeight: 700,
+      textTransform: 'none',
+      width: { xs: '100%', sm: 'auto' },
+      order: { xs: 3, sm: 1 },
+    }}
+  >
+    {loading ? 'कृपया थांबा...' : 'Delete'}
+  </Button>
 
-        <Stack
-          direction="row"
-          spacing={1.5}
-          sx={{
-            width: { xs: '100%', sm: 'auto' },
-            order: { xs: 1, sm: 2 },
-          }}
-        >
-          <Button
-            onClick={onClose}
-            variant="outlined"
-            disabled={loading}
-            fullWidth
-            sx={{
-              fontWeight: 700,
-              textTransform: 'none',
-            }}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={() => onEdit(record)}
-            variant="contained"
-            startIcon={<EditIcon />}
-            disabled={loading}
-            fullWidth
-            sx={{
-              fontWeight: 700,
-              textTransform: 'none',
-            }}
-          >
-            Edit
-          </Button>
-        </Stack>
-      </DialogActions>
+  <Stack
+    direction="row"
+    spacing={1.5}
+    sx={{
+      width: { xs: '100%', sm: 'auto' },
+      order: { xs: 1, sm: 2 },
+    }}
+  >
+    <Button
+      onClick={onClose}
+      variant="outlined"
+      disabled={loading}
+      fullWidth
+      sx={{
+        fontWeight: 700,
+        textTransform: 'none',
+      }}
+    >
+      Cancel
+    </Button>
+    <Button
+      onClick={() => onEdit(record)}
+      variant="contained"
+      startIcon={<EditIcon />}
+      disabled={loading}
+      fullWidth
+      sx={{
+        fontWeight: 700,
+        textTransform: 'none',
+      }}
+    >
+      Edit
+    </Button>
+  </Stack>
+</DialogActions>
     </Dialog>
   )
 }
