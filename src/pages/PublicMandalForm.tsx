@@ -31,7 +31,9 @@ interface FormValues {
   mandal_name: string
   president_name: string
   president_mobile: string
+  mandal_village: string
   information_type: InformationType | ''
+
 }
 
 interface FormErrors {
@@ -40,10 +42,12 @@ interface FormErrors {
   president_mobile?: string
   information_type?: string
   photos?: string
+  mandal_village?: string
 }
 
 const initialValues: FormValues = {
   mandal_name: '',
+  mandal_village: '',
   president_name: '',
   president_mobile: '',
   information_type: '',
@@ -100,13 +104,14 @@ function PublicMandalForm() {
 
     try {
       const urls: string[] = []
-      for (const file of filePhotos) {
-        const ext = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
-        const name =
-          typeof crypto !== 'undefined' && 'randomUUID' in crypto
-            ? crypto.randomUUID()
-            : `${Date.now()}-${Math.random().toString(36).slice(2)}`
-        const path = `${name}.${ext}`
+     for (const file of filePhotos) {
+  const ext = file.type === 'image/png' ? 'png'
+            : file.type === 'image/webp' ? 'webp'
+            : 'jpg'
+  const shortId = `${Date.now().toString(36)}-${Math.random()
+    .toString(36)
+    .slice(2, 7)}`
+  const path = `${shortId}.${ext}`
 
         const { error: uploadError } = await supabase.storage
           .from(BUCKET_NAME)
@@ -129,32 +134,44 @@ function PublicMandalForm() {
         urls.push(data.publicUrl)
       }
 
-      const { error: dbError } = await supabase
-        .from('ganesh_mandal_records_2026')
-        .insert({
-          mandal_name: values.mandal_name.trim(),
-          president_name: values.president_name.trim(),
-          president_mobile: values.president_mobile,
-          idol_photo_url: photoUrlsToString(urls),
-          information_type: values.information_type,
-        })
+     const { error: dbError } = await supabase
+  .from('ganesh_mandal_records_2026')
+  .insert({
+    mandal_name: values.mandal_name.trim(),
+    mandal_village: values.mandal_village.trim() || null,
+    president_name: values.president_name.trim(),
+    president_mobile: values.president_mobile,
+    idol_photo_url: photoUrlsToString(urls),
+    information_type: values.information_type,
+  })
 
       if (dbError) {
         await supabase.storage.from(BUCKET_NAME).remove(uploadedPaths)
         throw new Error(`माहिती सेव्ह झाली नाही: ${dbError.message}`)
       }
 
-      const message = [
-        '🙏 नवीन गणेशमूर्ती मंडळ नोंदणी',
-        '',
-        `मंडळाचे नाव: ${values.mandal_name.trim()}`,
-        `अध्यक्षाचे नाव: ${values.president_name.trim()}`,
-        `मोबाईल नंबर: ${values.president_mobile}`,
-        `माहितीचा प्रकार: ${values.information_type}`,
-        '',
-        '📷 मूर्तीचे फोटो:',
-        ...urls.map((u, i) => `Photo ${i + 1}: ${u}`),
-      ].join('\n')
+    const heroLine =
+  values.information_type === INFORMATION_TYPES.TAKEN
+    ? '✨ *२०२६ गणेशमूर्ती नोंदणी* ✨'
+    : '✨ *पुढील वर्षाची गणेशमूर्ती नोंदणी* ✨'
+
+const photoLines = urls.map((u, i) => `🖼️ ${i + 1}) ${u}`)
+
+const message = [
+  '🙏 *नमस्कार* 🙏',
+  '🕉️ *सिद्धिविनायक आर्ट्स* 🕉️',
+  heroLine,
+  '',
+  `🏛️ *मंडळ:* ${values.mandal_name.trim()}`,
+  `📍 *गाव:* ${values.mandal_village.trim() || '—'}`,
+  `👤 *अध्यक्ष:* ${values.president_name.trim()}`,
+  `📞 *मोबाईल:* ${values.president_mobile}`,
+  '',
+  '📷 *मूर्तीचे फोटो:*',
+  ...photoLines,
+  '',
+  '🙏 *गणपती बाप्पा मोरया* 🙏',
+].join('\n')
 
       const waUrl = `https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(
         message,
@@ -311,7 +328,20 @@ function PublicMandalForm() {
                   autoComplete="organization"
                 />
 
-                
+                <TextField
+                  label="मंडळाचे गाव / पत्ता "
+                  value={values.mandal_village}
+                  onChange={(e) =>
+                    patch({ mandal_village: e.target.value })
+                  }
+                  placeholder="उदा. श्री गणेश मित्र मंडळ,कुरूंदवाड ( शिवाजी चौक जवळ ) "
+                  fullWidth
+                  error={Boolean(errors.mandal_village)}
+                  helperText={errors.mandal_village}
+                  autoComplete="street-address"
+                />
+
+
                 <TextField
                   label="अध्यक्षाचे नाव"
                   value={values.president_name}
@@ -319,7 +349,6 @@ function PublicMandalForm() {
                     patch({ president_name: e.target.value })
                   }
                   placeholder="अध्यक्षाचे पूर्ण नाव"
-                  required
                   fullWidth
                   error={Boolean(errors.president_name)}
                   helperText={errors.president_name}
@@ -336,7 +365,6 @@ function PublicMandalForm() {
                     patch({ president_mobile: only })
                   }}
                   placeholder="10 अंकी मोबाईल नंबर"
-                  required
                   fullWidth
                   error={Boolean(errors.president_mobile)}
                   helperText={errors.president_mobile}
@@ -353,15 +381,14 @@ function PublicMandalForm() {
                   <PhotoUpload
                     name="photos"
                     label="मंडळाच्या सजावट/डिझाइनमधील गणेशमूर्तीचे फोटो"
-                    placeholder="फोटो निवडा किंवा ड्रॉप करा"
+                    placeholder="फोटो निवडा "
                     maxFiles={3}
                     maxSizeMB={10}
                     targetSizeKB={500}
-                    compress
+                    compress={false}
                     cropEnabled={false}
                     cameraEnabled
-                    size="medium"
-                    required
+                    size="small"
                   />
                   {errors.photos && (
                     <Box

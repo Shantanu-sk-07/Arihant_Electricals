@@ -61,19 +61,6 @@ function toMarathiNumber(n: number): string {
     .join('')
 }
 
-function formatDateTime(iso: string): string {
-  try {
-    return new Date(iso).toLocaleString('en-IN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-  } catch {
-    return iso
-  }
-}
 
 function AdminDashboard() {
   const navigate = useNavigate()
@@ -152,6 +139,7 @@ function AdminDashboard() {
       list = list.filter(
         (r) =>
           r.mandal_name.toLowerCase().includes(q) ||
+          (r.mandal_village ?? '').toLowerCase().includes(q) ||
           r.president_name.toLowerCase().includes(q) ||
           r.president_mobile.includes(q),
       )
@@ -284,6 +272,7 @@ function AdminDashboard() {
     if (!editingRecord) return undefined
     return {
       mandal_name: editingRecord.mandal_name,
+      mandal_village: editingRecord.mandal_village ?? '',
       president_name: editingRecord.president_name,
       president_mobile: editingRecord.president_mobile,
       information_type: editingRecord.information_type as InformationType,
@@ -298,6 +287,12 @@ function AdminDashboard() {
       key: 'mandal_name',
       label: 'मंडळाचे नाव',
       minWidth: 180,
+    },
+    {
+      key: 'mandal_village',
+      label: 'गाव / पत्ता',
+      minWidth: 180,
+      render: (row) => row.mandal_village || '—',
     },
     {
       key: 'president_name',
@@ -350,12 +345,6 @@ function AdminDashboard() {
           </>
         )
       },
-    },
-    {
-      key: 'created_at',
-      label: 'दिनांक / वेळ',
-      width: 160,
-      render: (row) => formatDateTime(row.created_at),
     },
     {
       key: ACTION_KEY,
@@ -420,7 +409,11 @@ function AdminDashboard() {
             }}
           >
             <Box
-              sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.75, sm: 1.5 } }}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: { xs: 0.75, sm: 1.5 },
+              }}
             >
               <Box
                 sx={{
@@ -489,10 +482,16 @@ function AdminDashboard() {
                   },
                 }}
               >
-                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                <Box
+                  component="span"
+                  sx={{ display: { xs: 'none', sm: 'inline' } }}
+                >
                   नवीन नोंद
                 </Box>
-                <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>
+                <Box
+                  component="span"
+                  sx={{ display: { xs: 'inline', sm: 'none' } }}
+                >
                   नवीन
                 </Box>
               </Button>
@@ -518,7 +517,10 @@ function AdminDashboard() {
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: { xs: 'repeat(3, 1fr)', sm: 'repeat(3, 1fr)' },
+            gridTemplateColumns: {
+              xs: 'repeat(3, 1fr)',
+              sm: 'repeat(3, 1fr)',
+            },
             gap: { xs: 0.5, sm: 1.5 },
             mb: { xs: 1, sm: 2 },
           }}
@@ -686,7 +688,7 @@ function AdminDashboard() {
           >
             <TextField
               size="small"
-              placeholder="मंडळ / अध्यक्ष / मोबाईल शोधा..."
+              placeholder="मंडळ / गाव / अध्यक्ष / मोबाईल शोधा..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               fullWidth
@@ -868,7 +870,9 @@ function AdminDashboard() {
                 pdfLoading ? (
                   <CircularProgress size={14} />
                 ) : (
-                  <PictureAsPdfIcon sx={{ fontSize: { xs: 14, sm: 18 } }} />
+                  <PictureAsPdfIcon
+                    sx={{ fontSize: { xs: 14, sm: 18 } }}
+                  />
                 )
               }
               variant="outlined"

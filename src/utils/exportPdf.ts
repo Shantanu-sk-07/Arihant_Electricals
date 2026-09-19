@@ -2,9 +2,9 @@ import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 import type { MandalRecord } from '../types'
 import { stringToPhotoUrls } from './photoUtils'
- 
+
 const PDF_FILENAME = 'Ganesh_Mandal_Records_2026.pdf'
- 
+
 function formatDateTime(iso: string): string {
   try {
     return new Date(iso).toLocaleString('en-IN', {
@@ -19,7 +19,7 @@ function formatDateTime(iso: string): string {
     return iso
   }
 }
- 
+
 function formatDateForHeader(): string {
   const d = new Date()
   const dd = String(d.getDate()).padStart(2, '0')
@@ -29,7 +29,7 @@ function formatDateForHeader(): string {
   const min = String(d.getMinutes()).padStart(2, '0')
   return `${dd}/${mm}/${yyyy} ${hh}:${min}`
 }
- 
+
 function getMaxPhotoCount(records: MandalRecord[]): number {
   let max = 0
   for (const r of records) {
@@ -38,7 +38,7 @@ function getMaxPhotoCount(records: MandalRecord[]): number {
   }
   return max
 }
- 
+
 function escapeHtml(text: string): string {
   return text
     .replace(/&/g, '&amp;')
@@ -47,7 +47,7 @@ function escapeHtml(text: string): string {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;')
 }
- 
+
 function unescapeHtml(text: string): string {
   return text
     .replace(/&amp;/g, '&')
@@ -56,9 +56,7 @@ function unescapeHtml(text: string): string {
     .replace(/&quot;/g, '"')
     .replace(/&#039;/g, "'")
 }
- 
-// Raw link position in PDF-space (pt), measured from the TOP of the FULL
-// (unsplit) rendered image — not yet assigned to a specific page.
+
 type RawPhotoLink = {
   xPt: number
   yPt: number
@@ -66,15 +64,15 @@ type RawPhotoLink = {
   heightPt: number
   url: string
 }
- 
+
 function buildHtmlTable(records: MandalRecord[]): string {
   const maxPhotos = getMaxPhotoCount(records)
   const photoCols = Math.max(1, maxPhotos)
- 
+
   let html = `
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap');
- 
+
       .pdf-container {
         font-family: 'Noto Sans Devanagari', 'Nirmala UI', 'Mangal', system-ui, sans-serif;
         background: #fff;
@@ -138,6 +136,7 @@ function buildHtmlTable(records: MandalRecord[]): string {
           <tr>
             <th>अ.क्र.</th>
             <th>मंडळाचे नाव</th>
+            <th>गाव / पत्ता</th>
             <th>अध्यक्षाचे नाव</th>
             <th>मोबाईल</th>
             <th>माहितीचा प्रकार</th>
@@ -149,7 +148,7 @@ function buildHtmlTable(records: MandalRecord[]): string {
         </thead>
         <tbody>
   `
- 
+
   records.forEach((r, idx) => {
     const photos = stringToPhotoUrls(r.idol_photo_url).filter(Boolean)
     const photoCells = Array.from({ length: photoCols }, (_, i) => {
@@ -159,11 +158,12 @@ function buildHtmlTable(records: MandalRecord[]): string {
         ? `<td class="center" data-photo-url="${escapeHtml(url)}"><span class="photo-link">${label}</span></td>`
         : `<td class="center"></td>`
     }).join('')
- 
+
     html += `
       <tr>
         <td class="center">${idx + 1}</td>
         <td>${escapeHtml(r.mandal_name)}</td>
+        <td>${escapeHtml(r.mandal_village ?? '—')}</td>
         <td>${escapeHtml(r.president_name)}</td>
         <td class="center">${escapeHtml(r.president_mobile)}</td>
         <td>${escapeHtml(r.information_type)}</td>
@@ -172,46 +172,37 @@ function buildHtmlTable(records: MandalRecord[]): string {
       </tr>
     `
   })
- 
+
   html += `
         </tbody>
       </table>
     </div>
   `
- 
+
   return html
 }
- 
-/**
- * Collects every clickable photo cell's position and converts it directly
- * into PDF-space points, using `ptPerPixel` = imgWidthPt / containerWidthCss.
- *
- * IMPORTANT: getBoundingClientRect() already returns CSS pixels, so it must
- * be scaled by (PDF-image-width-in-pt / container-CSS-width), NOT by the
- * html2canvas oversampling `scale` factor. Dividing by html2canvas's scale
- * (the old bug) only undoes oversampling — it does nothing to map CSS-pixel
- * space onto PDF-point space, which is why links drifted further off their
- * cells the further right/down they were.
- */
+
 function collectRawPhotoLinks(
   container: HTMLElement,
   ptPerPixel: number,
 ): RawPhotoLink[] {
   const links: RawPhotoLink[] = []
   const containerRect = container.getBoundingClientRect()
- 
-  const photoCells = container.querySelectorAll<HTMLElement>('td[data-photo-url]')
- 
+
+  const photoCells = container.querySelectorAll<HTMLElement>(
+    'td[data-photo-url]',
+  )
+
   photoCells.forEach((cell) => {
     const rawUrl = cell.getAttribute('data-photo-url')
     if (!rawUrl) return
- 
+
     const url = unescapeHtml(rawUrl)
     if (!url || !url.startsWith('http')) return
- 
+
     const rect = cell.getBoundingClientRect()
     if (rect.width === 0 || rect.height === 0) return
- 
+
     links.push({
       xPt: (rect.left - containerRect.left) * ptPerPixel,
       yPt: (rect.top - containerRect.top) * ptPerPixel,
@@ -220,10 +211,10 @@ function collectRawPhotoLinks(
       url,
     })
   })
- 
+
   return links
 }
- 
+
 export async function exportRecordsToPdf(
   records: MandalRecord[],
   filename: string = PDF_FILENAME,
@@ -235,11 +226,11 @@ export async function exportRecordsToPdf(
   container.style.background = '#fff'
   container.innerHTML = buildHtmlTable(records)
   document.body.appendChild(container)
- 
+
   try {
     await document.fonts.ready
     await new Promise((resolve) => setTimeout(resolve, 500))
- 
+
     const scale = 2
     const canvas = await html2canvas(container, {
       scale,
@@ -247,70 +238,58 @@ export async function exportRecordsToPdf(
       useCORS: true,
       logging: false,
     })
- 
+
     const pdf = new jsPDF({
       orientation: 'landscape',
       unit: 'pt',
       format: 'a4',
     })
- 
+
     const pageWidth = pdf.internal.pageSize.getWidth()
     const pageHeight = pdf.internal.pageSize.getHeight()
- 
+
     const imgWidth = pageWidth
     const imgHeight = (canvas.height * imgWidth) / canvas.width
- 
-    // --- Correct px -> pt conversion ratio ---
-    // containerRect.width is the CSS pixel width of the rendered table
-    // (should be ~1400px, the .pdf-container width). imgWidth is that same
-    // table's width once placed into the PDF, in points. This ratio maps
-    // ANY CSS-pixel coordinate inside the container to PDF points.
+
     const containerRect = container.getBoundingClientRect()
     const ptPerPixel = imgWidth / containerRect.width
- 
+
     const rawLinks = collectRawPhotoLinks(container, ptPerPixel)
- 
+
     const imgData = canvas.toDataURL('image/jpeg', 0.95)
- 
+
     let heightLeft = imgHeight
     let position = 0
- 
+
     pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight)
     heightLeft -= pageHeight
- 
+
     while (heightLeft > 0) {
       position = heightLeft - imgHeight
       pdf.addPage()
       pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight)
       heightLeft -= pageHeight
     }
- 
-    // --- Assign each link to the correct page ---
-    // rawLinks' yPt is measured from the top of the FULL (unsplit) image.
-    // Since the image is tiled page-by-page at page-height intervals, the
-    // page a link belongs to is simply yPt / pageHeight, and its position
-    // within that page is the remainder.
+
     rawLinks.forEach((link) => {
       const pageIndex = Math.floor(link.yPt / pageHeight)
       const yOnPage = link.yPt - pageIndex * pageHeight
- 
-      // Guard against a row that happens to straddle a page break —
-      // clip the box so it doesn't bleed onto the next page.
+
       const heightOnPage = Math.min(link.heightPt, pageHeight - yOnPage)
       if (heightOnPage <= 0) return
- 
+
       pdf.setPage(pageIndex + 1)
       pdf.link(link.xPt, yOnPage, link.widthPt, heightOnPage, {
         url: link.url,
       })
     })
- 
+
     pdf.save(filename)
   } finally {
     document.body.removeChild(container)
   }
 }
- 
+
 export async function exportFilteredRecordsToPdf(
   records: MandalRecord[],
 ): Promise<void> {

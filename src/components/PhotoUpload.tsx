@@ -856,156 +856,82 @@ const clampBox = useCallback(
   async (mode: "user" | "environment") => {
     try {
       stopCameraStream();
-      
-      // Get all video devices
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      const videoDevices = devices.filter(d => d.kind === 'videoinput');
-      
-      if (videoDevices.length === 0) {
-        showSnackbar("error", "No camera found");
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        showSnackbar(
+          "error",
+          "Camera API is not supported. Please use a modern browser over HTTPS.",
+        );
         setCameraOpen(false);
         return;
       }
 
       let stream: MediaStream | null = null;
-      let selectedDeviceId = '';
 
-      // For back camera (environment)
-      if (mode === 'environment') {
-        // Try to find back camera by label
-        const backCamera = videoDevices.find(d => 
-          d.label.toLowerCase().includes('back') || 
-          d.label.toLowerCase().includes('rear') || 
-          d.label.toLowerCase().includes('environment') ||
-          d.label.toLowerCase().includes('主摄像头') ||
-          d.label.toLowerCase().includes('后置')
-        );
-        
-        if (backCamera) {
-          selectedDeviceId = backCamera.deviceId;
-        } else {
-          // On most phones, the last camera is the back camera
-          // On some devices, the first is back
-          // Try both approaches
-          const lastCamera = videoDevices[videoDevices.length - 1];
-          const firstCamera = videoDevices[0];
-          
-          // Try last camera first (usually back on Android)
-          try {
-            stream = await navigator.mediaDevices.getUserMedia({
-              video: { 
-                deviceId: { exact: lastCamera.deviceId },
-                width: { ideal: 1920 },
-                height: { ideal: 1080 }
-              },
-              audio: false,
-            });
-            selectedDeviceId = lastCamera.deviceId;
-          } catch {
-            // If last fails, try first (usually back on iOS)
-            stream = await navigator.mediaDevices.getUserMedia({
-              video: { 
-                deviceId: { exact: firstCamera.deviceId },
-                width: { ideal: 1920 },
-                height: { ideal: 1080 }
-              },
-              audio: false,
-            });
-            selectedDeviceId = firstCamera.deviceId;
-          }
-        }
-      } else {
-        // For front camera (user)
-        const frontCamera = videoDevices.find(d => 
-          d.label.toLowerCase().includes('front') || 
-          d.label.toLowerCase().includes('user') || 
-          d.label.toLowerCase().includes('face') ||
-          d.label.toLowerCase().includes('前置') ||
-          d.label.toLowerCase().includes('自拍')
-        );
-        
-        if (frontCamera) {
-          selectedDeviceId = frontCamera.deviceId;
-        } else {
-          // On most phones, the first camera is the front camera
-          // On some devices, the last is front
-          const firstCamera = videoDevices[0];
-          const lastCamera = videoDevices[videoDevices.length - 1];
-          
-          // Try first camera first (usually front on Android)
-          try {
-            stream = await navigator.mediaDevices.getUserMedia({
-              video: { 
-                deviceId: { exact: firstCamera.deviceId },
-                width: { ideal: 1920 },
-                height: { ideal: 1080 }
-              },
-              audio: false,
-            });
-            selectedDeviceId = firstCamera.deviceId;
-          } catch {
-            // If first fails, try last (usually front on iOS)
-            stream = await navigator.mediaDevices.getUserMedia({
-              video: { 
-                deviceId: { exact: lastCamera.deviceId },
-                width: { ideal: 1920 },
-                height: { ideal: 1080 }
-              },
-              audio: false,
-            });
-            selectedDeviceId = lastCamera.deviceId;
-          }
-        }
-      }
-
-      // If we have a selected device ID but no stream yet, try with it
-      if (selectedDeviceId && !stream) {
-        try {
-          stream = await navigator.mediaDevices.getUserMedia({
-            video: { 
-              deviceId: { exact: selectedDeviceId },
-              width: { ideal: 1920 },
-              height: { ideal: 1080 }
-            },
-            audio: false,
-          });
-        } catch {
-          // Fallback: try without deviceId
-          stream = await navigator.mediaDevices.getUserMedia({
-            video: { 
-              facingMode: mode,
-              width: { ideal: 1920 },
-              height: { ideal: 1080 }
-            },
-            audio: false,
-          });
-        }
-      }
-
-      // If still no stream, try basic constraints
-      if (!stream) {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: { 
-            width: { ideal: 1920 },
-            height: { ideal: 1080 }
+      const attempts: Array<MediaStreamConstraints> = [
+        {
+          video: {
+            facingMode: mode === "environment" ? { ideal: "environment" } : { ideal: "user" },
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
           },
           audio: false,
-        });
+        },
+        {
+          video: {
+            facingMode: mode,
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+          },
+          audio: false,
+        },
+        {
+          video: { facingMode: mode },
+          audio: false,
+        },
+        {
+          video: true,
+          audio: false,
+        },
+      ];
+
+      for (const constraints of attempts) {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia(constraints);
+          if (stream) break;
+        } catch (err) {
+          console.warn("Camera attempt failed:", constraints, err);
+        }
+      }
+
+      if (!stream) {
+        showSnackbar(
+          "error",
+          "Unable to access camera. Please check permissions and close other apps using the camera.",
+        );
+        setCameraOpen(false);
+        return;
       }
 
       setCameraStream(stream);
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        await videoRef.current.play();
+        try {
+          await videoRef.current.play();
+        } catch (playErr) {
+          console.warn("Video play error:", playErr);
+        }
       }
-      
     } catch (error) {
       console.error("Camera error:", error);
-      showSnackbar("error", "Unable to access camera. Please check permissions.");
+      showSnackbar(
+        "error",
+        "Unable to access camera. Please check permissions.",
+      );
       setCameraOpen(false);
     }
   },
-  [stopCameraStream]
+  [stopCameraStream],
 );
 
 const handleOpenCamera = useCallback(() => {
@@ -1163,7 +1089,7 @@ const handleFlipCamera = useCallback(async () => {
           variant="outlined"
           sx={{
             border: `1.5px solid ${dragActive ? "#1976d2" : errorMessage ? "#dc2626" : "#e2e8f0"}`,
-            borderRadius: 2,
+            borderRadius: 1,
             bgcolor: dragActive ? alpha("#1976d2", 0.02) : disabled ? alpha("#000", 0.02) : "#fff",
             transition: "all 0.2s",
             overflow: "hidden",

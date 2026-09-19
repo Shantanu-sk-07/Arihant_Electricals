@@ -33,6 +33,7 @@ export interface AdminMandalFormResult {
   president_mobile: string
   information_type: InformationType
   newPhotos: File[]
+  mandal_village: string
   existingPhotos: string[]
   removedPhotos: string[]
 }
@@ -47,6 +48,7 @@ interface AdminMandalFormProps {
 }
 
 interface FormErrors {
+  mandal_village?: string
   mandal_name?: string
   president_name?: string
   president_mobile?: string
@@ -60,6 +62,7 @@ const emptyState: AdminMandalFormResult = {
   mandal_name: '',
   president_name: '',
   president_mobile: '',
+  mandal_village: '',
   information_type: INFORMATION_TYPES.TAKEN,
   newPhotos: [],
   existingPhotos: [],
@@ -123,12 +126,13 @@ function AdminMandalForm({
     })
     const urls: string[] = []
     for (const file of compressed) {
-      const ext = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
-      const name =
-        typeof crypto !== 'undefined' && 'randomUUID' in crypto
-          ? crypto.randomUUID()
-          : `${Date.now()}-${Math.random().toString(36).slice(2)}`
-      const path = `${name}.${ext}`
+  const ext = file.type === 'image/png' ? 'png'
+            : file.type === 'image/webp' ? 'webp'
+            : 'jpg'
+  const shortId = `${Date.now().toString(36)}-${Math.random()
+    .toString(36)
+    .slice(2, 7)}`
+  const path = `${shortId}.${ext}`
 
       const { error } = await supabase.storage
         .from(BUCKET_NAME)
@@ -180,6 +184,7 @@ function AdminMandalForm({
       const photoField = photoUrlsToString(finalUrls)
 
       const payload = {
+        mandal_village: values.mandal_village.trim() || null,
         mandal_name: values.mandal_name.trim(),
         president_name: values.president_name.trim(),
         president_mobile: values.president_mobile,
@@ -241,13 +246,24 @@ function AdminMandalForm({
               helperText={errors.mandal_name}
             />
 
-            
+            <TextField
+                  label="मंडळाचे गाव / पत्ता"
+                  value={values.mandal_village}
+                  onChange={(e) =>
+                    patch({ mandal_village: e.target.value })
+                  }
+                  placeholder="उदा. श्री गणेश मित्र मंडळ,कुरूंदवाड ( शिवाजी चौक जवळ ) "
+                  fullWidth
+                  error={Boolean(errors.mandal_village)}
+                  helperText={errors.mandal_village}
+                  autoComplete="street-address"
+                />
+
 
             <TextField
               label="अध्यक्षाचे नाव"
               value={values.president_name}
               onChange={(e) => patch({ president_name: e.target.value })}
-              required
               fullWidth
               disabled={saving}
               error={Boolean(errors.president_name)}
@@ -263,7 +279,6 @@ function AdminMandalForm({
                   .slice(0, 10)
                 patch({ president_mobile: only })
               }}
-              required
               fullWidth
               disabled={saving}
               error={Boolean(errors.president_mobile)}
@@ -275,19 +290,17 @@ function AdminMandalForm({
 
             <Box>
               <PhotoUpload
-                name="photos"
-                label="गणेशमूर्तीचे फोटो"
-                placeholder="फोटो निवडा किंवा ड्रॉप करा"
-                maxFiles={3}
-                maxSizeMB={10}
-                targetSizeKB={500}
-                compress
-                cropEnabled={false}
-                cameraEnabled
-                disabled={saving}
-                size="medium"
-                required
-              />
+                    name="photos"
+                    label="मंडळाच्या सजावट/डिझाइनमधील गणेशमूर्तीचे फोटो"
+                    placeholder="फोटो निवडा "
+                    maxFiles={3}
+                    maxSizeMB={10}
+                    targetSizeKB={500}
+                    compress={false}
+                    cropEnabled={false}
+                    cameraEnabled
+                    size="small"
+                  />
               {errors.photos && (
                 <Alert severity="error" sx={{ mt: 1.5 }}>
                   {errors.photos}

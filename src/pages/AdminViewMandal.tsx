@@ -58,23 +58,38 @@ function InfoRow({
   value: React.ReactNode
 }) {
   return (
-    <Box>
+    <Box
+      sx={{
+        p: { xs: 1.25, sm: 1.5 },
+        border: '1px solid',
+        borderColor: 'divider',
+        borderRadius: 2,
+        background: 'linear-gradient(135deg, #fffdfa 0%, #faf3ea 100%)',
+        height: '100%',
+      }}
+    >
       <Typography
         variant="caption"
         sx={{
           color: 'text.secondary',
           fontWeight: 700,
           display: 'block',
-          letterSpacing: 0.5,
+          letterSpacing: 0.4,
           textTransform: 'uppercase',
-          fontSize: 11,
+          fontSize: 10.5,
         }}
       >
         {label}
       </Typography>
       <Typography
         variant="body1"
-        sx={{ fontWeight: 600, color: 'text.primary', mt: 0.25 }}
+        sx={{
+          fontWeight: 600,
+          color: 'text.primary',
+          mt: 0.25,
+          fontSize: { xs: 14, sm: 15 },
+          wordBreak: 'break-word',
+        }}
       >
         {value}
       </Typography>
@@ -98,55 +113,100 @@ function AdminViewMandal({
     <Dialog
       open={open}
       onClose={loading ? undefined : onClose}
-      maxWidth="md"
       fullWidth
+      maxWidth="md"
       slotProps={{
-        paper: { sx: { borderRadius: 3, overflow: 'hidden' } },
+        paper: {
+          sx: {
+            borderRadius: { xs: 2, sm: 3 },
+            overflow: 'hidden',
+            m: { xs: '2px', sm: 2 },
+            width: { xs: 'calc(100% - 4px)', sm: '100%' },
+            maxWidth: { xs: 'calc(100% - 4px)', sm: '900px' },
+            maxHeight: { xs: 'calc(100% - 4px)', sm: '92vh' },
+          },
+        },
       }}
     >
       <DialogTitle
         sx={{
           display: 'flex',
-          justifyContent: 'space-between',
+          flexDirection: 'column',
           alignItems: 'center',
+          justifyContent: 'center',
+          textAlign: 'center',
+          position: 'relative',
           background:
             'linear-gradient(135deg, #a94e0a 0%, #7c2905 100%)',
           color: '#fff',
-          fontWeight: 800,
-          py: 2,
+          py: { xs: 2, sm: 2.5 },
+          px: { xs: 4, sm: 6 },
         }}
       >
-        <Box>
-          <Typography
-            variant="h6"
-            sx={{ fontWeight: 800, color: '#fff' }}
-          >
-            {record.mandal_name}
-          </Typography>
-          <Typography
-            variant="caption"
-            sx={{ color: 'rgba(255,255,255,0.85)' }}
-          >
-            नोंद तपशील
-          </Typography>
-        </Box>
         <IconButton
           onClick={onClose}
-          sx={{ color: '#fff' }}
+          sx={{
+            color: '#fff',
+            position: 'absolute',
+            top: { xs: 8, sm: 12 },
+            right: { xs: 8, sm: 12 },
+          }}
           disabled={loading}
           aria-label="close"
         >
           <CloseIcon />
         </IconButton>
+
+        <Box
+          sx={{
+            width: { xs: 44, sm: 52 },
+            height: { xs: 44, sm: 52 },
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'linear-gradient(145deg, #fff8e8, #ffd9a8)',
+            color: '#7c2905',
+            fontSize: { xs: 22, sm: 26 },
+            fontWeight: 800,
+            boxShadow: '0 6px 16px rgba(0, 0, 0, 0.25)',
+            mb: 1,
+          }}
+        >
+          ॐ
+        </Box>
+
+        <Typography
+          variant="h6"
+          sx={{
+            fontWeight: 800,
+            color: '#fff',
+            lineHeight: 1.25,
+            fontSize: { xs: '1rem', sm: '1.35rem' },
+            wordBreak: 'break-word',
+          }}
+        >
+          {record.mandal_name}
+        </Typography>
+        <Typography
+          variant="caption"
+          sx={{
+            color: 'rgba(255,255,255,0.85)',
+            fontSize: { xs: 11, sm: 12 },
+            mt: 0.25,
+          }}
+        >
+          नोंद तपशील
+        </Typography>
       </DialogTitle>
 
       <Divider />
 
       <DialogContent
         sx={{
-          p: { xs: 2.5, sm: 3.5 },
+          p: { xs: 1.5, sm: 3 },
           position: 'relative',
-          minHeight: 280,
+          minHeight: 240,
         }}
       >
         {loading && (
@@ -165,20 +225,25 @@ function AdminViewMandal({
           </Box>
         )}
 
-        <Box sx={{ mb: 3 }}>
+        <Box sx={{ mb: { xs: 2, sm: 3 } }}>
           <Typography
             variant="subtitle1"
-            sx={{ fontWeight: 800, mb: 1.5, color: 'primary.dark' }}
+            sx={{
+              fontWeight: 800,
+              mb: 1.25,
+              color: 'primary.dark',
+              fontSize: { xs: 14, sm: 16 },
+            }}
           >
             📷 मूर्तीचे फोटो ({photos.length})
           </Typography>
 
           {photos.length === 0 ? (
-            <Typography color="text.secondary">
+            <Typography color="text.secondary" sx={{ fontSize: 13 }}>
               फोटो उपलब्ध नाही
             </Typography>
           ) : (
-            <Grid container spacing={2}>
+            <Grid container spacing={{ xs: 1, sm: 2 }}>
               {photos.map((url, i) => (
                 <Grid size={{ xs: 12, sm: 6, md: 4 }} key={url}>
                   <Box
@@ -261,11 +326,20 @@ function AdminViewMandal({
           )}
         </Box>
 
-        <Divider sx={{ mb: 3 }} />
+        <Divider sx={{ mb: { xs: 2, sm: 2.5 } }} />
 
-        <Grid container spacing={3}>
+        <Grid container spacing={{ xs: 1.25, sm: 2 }}>
           <Grid size={{ xs: 12, sm: 6 }}>
-            <InfoRow label="अध्यक्षाचे नाव" value={record.president_name} />
+            <InfoRow
+              label="गाव / पत्ता"
+              value={record.mandal_village || '—'}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <InfoRow
+              label="अध्यक्षाचे नाव"
+              value={record.president_name}
+            />
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <InfoRow
@@ -296,7 +370,7 @@ function AdminViewMandal({
               value={formatTime(record.created_at)}
             />
           </Grid>
-          <Grid size={{ xs: 12 }}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <InfoRow
               label="माहितीचा प्रकार"
               value={record.information_type}
@@ -309,11 +383,12 @@ function AdminViewMandal({
 
       <DialogActions
         sx={{
-          p: 2.5,
+          p: { xs: 1.5, sm: 2.5 },
           display: 'flex',
-          justifyContent: 'space-between',
-          gap: 1.5,
-          flexWrap: 'wrap',
+          flexDirection: { xs: 'column-reverse', sm: 'row' },
+          justifyContent: { xs: 'stretch', sm: 'space-between' },
+          alignItems: 'stretch',
+          gap: { xs: 1, sm: 1.5 },
         }}
       >
         <Button
@@ -322,26 +397,49 @@ function AdminViewMandal({
           color="error"
           startIcon={<DeleteIcon />}
           disabled={loading}
-          sx={{ fontWeight: 700 }}
+          fullWidth
+          sx={{
+            fontWeight: 700,
+            textTransform: 'none',
+            width: { xs: '100%', sm: 'auto' },
+            order: { xs: 3, sm: 1 },
+          }}
         >
-          डिलीट करा
+          Delete
         </Button>
-        <Stack direction="row" spacing={1.5}>
+
+        <Stack
+          direction="row"
+          spacing={1.5}
+          sx={{
+            width: { xs: '100%', sm: 'auto' },
+            order: { xs: 1, sm: 2 },
+          }}
+        >
           <Button
             onClick={onClose}
             variant="outlined"
             disabled={loading}
+            fullWidth
+            sx={{
+              fontWeight: 700,
+              textTransform: 'none',
+            }}
           >
-            बंद करा
+            Cancel
           </Button>
           <Button
             onClick={() => onEdit(record)}
             variant="contained"
             startIcon={<EditIcon />}
             disabled={loading}
-            sx={{ fontWeight: 700 }}
+            fullWidth
+            sx={{
+              fontWeight: 700,
+              textTransform: 'none',
+            }}
           >
-            संपादित करा
+            Edit
           </Button>
         </Stack>
       </DialogActions>
