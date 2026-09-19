@@ -17,6 +17,7 @@ import {
   RadioGroup,
   Stack,
   TextField,
+  Typography,
 } from '@mui/material'
 import { FormProvider, useForm } from 'react-hook-form'
 import { BUCKET_NAME, supabase } from '../supabase'
@@ -80,6 +81,9 @@ function AdminMandalForm({
   const [values, setValues] = useState<AdminMandalFormResult>(emptyState)
   const [errors, setErrors] = useState<FormErrors>({})
   const [saving, setSaving] = useState(false)
+  const [savingStep, setSavingStep] = useState<
+    'uploading' | 'saving' | null
+  >(null)
 
   const methods = useForm({
     defaultValues: {
@@ -103,21 +107,24 @@ function AdminMandalForm({
   const patch = (p: Partial<AdminMandalFormResult>) =>
     setValues((prev) => ({ ...prev, ...p }))
 
- const validate = (): boolean => {
-  const e: FormErrors = {}
-  if (!values.mandal_name.trim()) e.mandal_name = 'मंडळाचे नाव भरा.'
-  if (!/^[6-9][0-9]{9}$/.test(values.president_mobile))
-    e.president_mobile = 'कृपया योग्य 10 अंकी मोबाईल नंबर टाका.'
-  setErrors(e)
-  return Object.keys(e).length === 0
-}
+  const validate = (): boolean => {
+    const e: FormErrors = {}
+    if (!values.mandal_name.trim()) e.mandal_name = 'मंडळाचे नाव भरा.'
+    if (!/^[6-9][0-9]{9}$/.test(values.president_mobile))
+      e.president_mobile = 'कृपया योग्य 10 अंकी मोबाईल नंबर टाका.'
+    setErrors(e)
+    return Object.keys(e).length === 0
+  }
 
-      const uploadNewPhotos = async (files: File[]): Promise<string[]> => {
+  const uploadNewPhotos = async (files: File[]): Promise<string[]> => {
     const results = await Promise.all(
       files.map(async (file) => {
-        const ext = file.type === 'image/png' ? 'png'
-          : file.type === 'image/webp' ? 'webp'
-          : 'jpg'
+        const ext =
+          file.type === 'image/png'
+            ? 'png'
+            : file.type === 'image/webp'
+              ? 'webp'
+              : 'jpg'
         const shortId = `${Date.now().toString(36)}-${Math.random()
           .toString(36)
           .slice(2, 7)}`
@@ -145,10 +152,11 @@ function AdminMandalForm({
     const rawPhotos =
       (methods.getValues('photos') as PhotoItem[] | undefined) ?? []
 
-  
-if (!validate()) return 
+    if (!validate()) return
 
     setSaving(true)
+    setSavingStep(null)
+
     try {
       const newFiles = rawPhotos.filter(
         (p): p is File => p instanceof File,
@@ -157,7 +165,13 @@ if (!validate()) return
         (p): p is string => typeof p === 'string',
       )
 
+      if (newFiles.length > 0) {
+        setSavingStep('uploading')
+      }
+
       const newUrls = await uploadNewPhotos(newFiles)
+
+      setSavingStep('saving')
 
       const removedUrls = values.existingPhotos.filter(
         (u) => !keptUrls.includes(u),
@@ -206,6 +220,7 @@ if (!validate()) return
       showSnackbar('error', msg)
     } finally {
       setSaving(false)
+      setSavingStep(null)
     }
   }
 
@@ -238,18 +253,17 @@ if (!validate()) return
             />
 
             <TextField
-                  label="मंडळाचे गाव / पत्ता"
-                  value={values.mandal_village}
-                  onChange={(e) =>
-                    patch({ mandal_village: e.target.value })
-                  }
-                  placeholder="उदा. श्री गणेश मित्र मंडळ,कुरूंदवाड ( शिवाजी चौक जवळ ) "
-                  fullWidth
-                  error={Boolean(errors.mandal_village)}
-                  helperText={errors.mandal_village}
-                  autoComplete="street-address"
-                />
-
+              label="मंडळाचे गाव / पत्ता"
+              value={values.mandal_village}
+              onChange={(e) =>
+                patch({ mandal_village: e.target.value })
+              }
+              placeholder="उदा. श्री गणेश मित्र मंडळ,कुरूंदवाड ( शिवाजी चौक जवळ ) "
+              fullWidth
+              error={Boolean(errors.mandal_village)}
+              helperText={errors.mandal_village}
+              autoComplete="street-address"
+            />
 
             <TextField
               label="अध्यक्षाचे नाव"
@@ -281,17 +295,17 @@ if (!validate()) return
 
             <Box>
               <PhotoUpload
-                    name="photos"
-                    label="मंडळाच्या सजावट/डिझाइनमधील गणेशमूर्तीचे फोटो"
-                    placeholder="फोटो निवडा "
-                    maxFiles={3}
-                    maxSizeMB={10}
-                    targetSizeKB={2000}
-                    compress={true}
-                    cropEnabled={false}
-                    cameraEnabled
-                    size="small"
-                  />
+                name="photos"
+                label="मंडळाच्या सजावट/डिझाइनमधील गणेशमूर्तीचे फोटो"
+                placeholder="फोटो निवडा "
+                maxFiles={3}
+                maxSizeMB={10}
+                targetSizeKB={2000}
+                compress={true}
+                cropEnabled={false}
+                cameraEnabled
+                size="small"
+              />
               {errors.photos && (
                 <Alert severity="error" sx={{ mt: 1.5 }}>
                   {errors.photos}
@@ -353,21 +367,64 @@ if (!validate()) return
         </FormProvider>
       </DialogContent>
       <Divider />
-      <DialogActions sx={{ p: 2.5 }}>
-       <Button
-  onClick={handleSave}
-  variant="contained"
-  disabled={saving}
-  startIcon={
-    saving ? <CircularProgress size={16} color="inherit" /> : null
-  }
->
-  {saving
-    ? 'कृपया थांबा...'
-    : mode === 'add'
-      ? 'जोडा'
-      : 'सेव्ह करा'}
-</Button>
+      <DialogActions
+        sx={{
+          p: 2.5,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'stretch',
+          gap: 1,
+        }}
+      >
+        <Button
+          onClick={handleSave}
+          variant="contained"
+          disabled={saving}
+          startIcon={
+            saving ? <CircularProgress size={16} color="inherit" /> : null
+          }
+        >
+          {saving
+            ? 'कृपया थांबा...'
+            : mode === 'add'
+              ? 'जोडा'
+              : 'सेव्ह करा'}
+        </Button>
+
+        {saving && (
+          <Box
+            sx={{
+              p: 1.5,
+              borderRadius: 2,
+              bgcolor: '#fff8e1',
+              border: '1px solid #ffe082',
+              textAlign: 'center',
+            }}
+          >
+            <Typography
+              sx={{
+                fontWeight: 700,
+                fontSize: { xs: 13, sm: 14 },
+                color: '#7a5c00',
+                mb: 0.5,
+              }}
+            >
+              {savingStep === 'uploading' && 'फोटो अपलोड होत आहेत...'}
+              {savingStep === 'saving' && 'माहिती सेव्ह होत आहे...'}
+              {!savingStep && 'कृपया थांबा...'}
+            </Typography>
+
+            <Typography
+              sx={{
+                fontSize: { xs: 11, sm: 12 },
+                color: '#7a5c00',
+                lineHeight: 1.6,
+              }}
+            >
+              कृपया थांबा, लवकरच पूर्ण होईल
+            </Typography>
+          </Box>
+        )}
       </DialogActions>
     </Dialog>
   )

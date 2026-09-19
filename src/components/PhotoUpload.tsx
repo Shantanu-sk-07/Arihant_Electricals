@@ -712,10 +712,10 @@ const clampBox = useCallback(
         setUploadProgress(30);
                      let processedFiles;
         if (compress) {
-          processedFiles = await compressMultipleImages(filesToAdd, {
-            maxWidth: 1600,
-            maxHeight: 1600,
-            quality: 0.85,
+                   processedFiles = await compressMultipleImages(filesToAdd, {
+            maxWidth: 1280,
+            maxHeight: 1280,
+            quality: 0.82,
             maxSizeKB: targetSizeKB,
           });
         } else {

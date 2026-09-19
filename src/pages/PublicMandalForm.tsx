@@ -61,6 +61,9 @@ function PublicMandalForm() {
   const [success, setSuccess] = useState(false);
   const [whatsappUrl, setWhatsappUrl] = useState("");
   const [showWhatsappFallback, setShowWhatsappFallback] = useState(false);
+  const [uploadStep, setUploadStep] = useState<
+    "compressing" | "uploading" | "saving" | "whatsapp" | null
+  >(null);
 
   const methods = useForm({
     defaultValues: {
@@ -93,10 +96,15 @@ function PublicMandalForm() {
     if (!validate()) return;
 
     setLoading(true);
+    setUploadStep("compressing");
     const uploadedPaths: string[] = [];
 
     try {
-          const uploadResults = await Promise.all(
+      if (filePhotos.length > 0) {
+        setUploadStep("uploading");
+      }
+
+      const uploadResults = await Promise.all(
         filePhotos.map(async (file) => {
           const ext =
             file.type === "image/png"
@@ -120,7 +128,9 @@ function PublicMandalForm() {
           if (uploadError)
             throw new Error(`फोटो अपलोड झाला नाही: ${uploadError.message}`);
 
-          const { data } = supabase.storage.from(BUCKET_NAME).getPublicUrl(path);
+          const { data } = supabase.storage
+            .from(BUCKET_NAME)
+            .getPublicUrl(path);
           return { path, url: data.publicUrl };
         })
       );
@@ -130,6 +140,8 @@ function PublicMandalForm() {
         uploadedPaths.push(r.path);
         urls.push(r.url);
       }
+
+      setUploadStep("saving");
 
       const { error: dbError } = await supabase
         .from("ganesh_mandal_records_2026")
@@ -174,6 +186,8 @@ function PublicMandalForm() {
         message,
       )}`;
 
+      setUploadStep("whatsapp");
+
       setWhatsappUrl(waUrl);
       setSuccess(true);
       setValues(initialValues);
@@ -195,6 +209,7 @@ function PublicMandalForm() {
       showSnackbar("error", msg);
     } finally {
       setLoading(false);
+      setUploadStep(null);
     }
   };
 
@@ -466,6 +481,43 @@ function PublicMandalForm() {
                 {loading ? "कृपया थांबा..." : "Submit & WhatsApp वर पाठवा"}
               </Button>
 
+              {loading && (
+                <Box
+                  sx={{
+                    mt: 1.5,
+                    p: 1.5,
+                    borderRadius: 2,
+                    bgcolor: "#fff8e1",
+                    border: "1px solid #ffe082",
+                    textAlign: "center",
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      fontWeight: 700,
+                      fontSize: { xs: 13, sm: 14 },
+                      color: "#7a5c00",
+                      mb: 0.5,
+                    }}
+                  >
+                    {uploadStep === "compressing" && "फोटो तयार होत आहेत..."}
+                    {uploadStep === "uploading" && "फोटो अपलोड होत आहेत..."}
+                    {uploadStep === "saving" && "माहिती सेव्ह होत आहे..."}
+                    {uploadStep === "whatsapp" && "WhatsApp उघडत आहे..."}
+                  </Typography>
+
+                  <Typography
+                    sx={{
+                      fontSize: { xs: 11, sm: 12 },
+                      color: "#7a5c00",
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    कृपया थांबा, लवकरच पूर्ण होईल
+                  </Typography>
+                </Box>
+              )}
+
               {success && (
                 <Alert
                   severity="success"
@@ -483,7 +535,6 @@ function PublicMandalForm() {
                     गणेशमूर्तीचा फोटो व इतर माहिती प्राप्त झाली आहे.
                   </Typography>
 
-                  {/* WhatsApp block zala tar extra message */}
                   {showWhatsappFallback && whatsappUrl && (
                     <Alert
                       severity="warning"
@@ -512,7 +563,6 @@ function PublicMandalForm() {
                       gap: { xs: 0.75, sm: 2 },
                     }}
                   >
-                    {/* WhatsApp button — fakt jar popup block zala tar */}
                     {showWhatsappFallback && whatsappUrl && (
                       <Box
                         component="a"
@@ -537,7 +587,6 @@ function PublicMandalForm() {
                       </Box>
                     )}
 
-                    {/* Nava entry link */}
                     <Box
                       component="button"
                       type="button"

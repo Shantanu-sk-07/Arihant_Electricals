@@ -12,10 +12,10 @@ export const compressImage = async (
   options: CompressionOptions = {}
 ): Promise<File> => {
   const {
-    maxWidth = 2000,
-    maxHeight = 2000,
-    maxSizeKB = 2000,
-    quality = 0.9,
+    maxWidth = 1280,
+    maxHeight = 1280,
+    maxSizeKB = 1500,
+    quality = 0.82,
   } = options;
 
   if (file.size <= maxSizeKB * 1024) {
@@ -29,7 +29,6 @@ export const compressImage = async (
       initialQuality: quality,
       useWebWorker: true,
       fileType: "image/jpeg",
-            maxIteration: 4,
     });
 
     return new File([compressedBlob], file.name, {
