@@ -22,7 +22,6 @@ import { FormProvider, useForm } from 'react-hook-form'
 import { BUCKET_NAME, supabase } from '../supabase'
 import { INFORMATION_TYPES, type InformationType } from '../types'
 import { photoUrlsToString } from '../utils/photoUtils'
-import { compressMultipleImages } from '../utils/imageCompressor'
 import { showSnackbar } from '../components/ToastMessage'
 import PhotoUpload from '../components/PhotoUpload'
 
@@ -113,38 +112,33 @@ function AdminMandalForm({
   return Object.keys(e).length === 0
 }
 
-  const uploadNewPhotos = async (files: File[]): Promise<string[]> => {
-    const compressed = await compressMultipleImages(files, {
-      maxWidth: 1600,
-      maxHeight: 1600,
-      quality: 0.8,
-      maxSizeKB: 500,
-    })
-    const urls: string[] = []
-    for (const file of compressed) {
-  const ext = file.type === 'image/png' ? 'png'
-            : file.type === 'image/webp' ? 'webp'
-            : 'jpg'
-  const shortId = `${Date.now().toString(36)}-${Math.random()
-    .toString(36)
-    .slice(2, 7)}`
-  const path = `${shortId}.${ext}`
+      const uploadNewPhotos = async (files: File[]): Promise<string[]> => {
+    const results = await Promise.all(
+      files.map(async (file) => {
+        const ext = file.type === 'image/png' ? 'png'
+          : file.type === 'image/webp' ? 'webp'
+          : 'jpg'
+        const shortId = `${Date.now().toString(36)}-${Math.random()
+          .toString(36)
+          .slice(2, 7)}`
+        const path = `${shortId}.${ext}`
 
-      const { error } = await supabase.storage
-        .from(BUCKET_NAME)
-        .upload(path, file, {
-          cacheControl: '3600',
-          contentType: file.type,
-          upsert: false,
-        })
-      if (error) throw new Error(error.message)
+        const { error } = await supabase.storage
+          .from(BUCKET_NAME)
+          .upload(path, file, {
+            cacheControl: '3600',
+            contentType: file.type,
+            upsert: false,
+          })
+        if (error) throw new Error(error.message)
 
-      const { data } = supabase.storage
-        .from(BUCKET_NAME)
-        .getPublicUrl(path)
-      urls.push(data.publicUrl)
-    }
-    return urls
+        const { data } = supabase.storage
+          .from(BUCKET_NAME)
+          .getPublicUrl(path)
+        return data.publicUrl
+      })
+    )
+    return results
   }
 
   const handleSave = async () => {

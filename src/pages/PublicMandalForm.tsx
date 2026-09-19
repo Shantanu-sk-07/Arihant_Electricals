@@ -96,34 +96,39 @@ function PublicMandalForm() {
     const uploadedPaths: string[] = [];
 
     try {
+          const uploadResults = await Promise.all(
+        filePhotos.map(async (file) => {
+          const ext =
+            file.type === "image/png"
+              ? "png"
+              : file.type === "image/webp"
+                ? "webp"
+                : "jpg";
+          const shortId = `${Date.now().toString(36)}-${Math.random()
+            .toString(36)
+            .slice(2, 7)}`;
+          const path = `${shortId}.${ext}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from(BUCKET_NAME)
+            .upload(path, file, {
+              cacheControl: "3600",
+              contentType: file.type,
+              upsert: false,
+            });
+
+          if (uploadError)
+            throw new Error(`फोटो अपलोड झाला नाही: ${uploadError.message}`);
+
+          const { data } = supabase.storage.from(BUCKET_NAME).getPublicUrl(path);
+          return { path, url: data.publicUrl };
+        })
+      );
+
       const urls: string[] = [];
-      for (const file of filePhotos) {
-        const ext =
-          file.type === "image/png"
-            ? "png"
-            : file.type === "image/webp"
-              ? "webp"
-              : "jpg";
-        const shortId = `${Date.now().toString(36)}-${Math.random()
-          .toString(36)
-          .slice(2, 7)}`;
-        const path = `${shortId}.${ext}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from(BUCKET_NAME)
-          .upload(path, file, {
-            cacheControl: "3600",
-            contentType: file.type,
-            upsert: false,
-          });
-
-        if (uploadError)
-          throw new Error(`फोटो अपलोड झाला नाही: ${uploadError.message}`);
-
-        uploadedPaths.push(path);
-
-        const { data } = supabase.storage.from(BUCKET_NAME).getPublicUrl(path);
-        urls.push(data.publicUrl);
+      for (const r of uploadResults) {
+        uploadedPaths.push(r.path);
+        urls.push(r.url);
       }
 
       const { error: dbError } = await supabase

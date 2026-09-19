@@ -29,7 +29,7 @@ export const compressImage = async (
       initialQuality: quality,
       useWebWorker: true,
       fileType: "image/jpeg",
-      maxIteration: 15,
+            maxIteration: 4,
     });
 
     return new File([compressedBlob], file.name, {
@@ -46,10 +46,5 @@ export const compressMultipleImages = async (
   files: File[],
   options?: CompressionOptions
 ): Promise<File[]> => {
-  const compressed: File[] = [];
-  for (const file of files) {
-    const result = await compressImage(file, options);
-    compressed.push(result);
-  }
-  return compressed;
+  return Promise.all(files.map((file) => compressImage(file, options)));
 };
