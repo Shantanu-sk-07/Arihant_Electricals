@@ -929,7 +929,7 @@ function AdminDashboard() {
           data={filtered}
           columns={columns}
           loading={loading}
-          rowsPerPage={10}
+          rowsPerPage={100}
           tableSize="small"
           sortOrder="newer"
           stickyHeader
