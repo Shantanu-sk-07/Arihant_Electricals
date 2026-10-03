@@ -1,14 +1,13 @@
 import { defineConfig } from 'vite';
 import path from 'node:path';
 import react from '@vitejs/plugin-react';
-
 export default defineConfig({
     plugins: [
         react(),
     ],
     resolve: {
         alias: {
-           '@': path.resolve(import.meta.dirname, './src'),
+            '@': path.resolve(import.meta.dirname, './src'),
         },
         dedupe: ['react', 'react-dom'],
     },
@@ -17,7 +16,7 @@ export default defineConfig({
         open: true,
         host: true,
     },
-        build: {
+    build: {
         rolldownOptions: {
             output: {
                 codeSplitting: {
