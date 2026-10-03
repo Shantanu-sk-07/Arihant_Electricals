@@ -114,38 +114,57 @@ export default function Pricing() {
 
       {/* PRICING TABLE */}
       <Container sx={{ py: { xs: 8, md: 10 } }}>
-        <SectionTitle eyebrow={content['plans.eyebrow'] || 'Pricing Plans'} title={content['plans.title'] || 'Choose Your Solar System'} subtitle={content['plans.subtitle'] || 'All prices include installation, GST, and 5-year workmanship warranty.'} />
+        <SectionTitle
+          eyebrow={content['plans.eyebrow'] || 'Pricing Plans'}
+          title={content['plans.title'] || 'Choose Your Solar System'}
+          subtitle={content['plans.subtitle'] || 'All prices include installation, GST, and 5-year workmanship warranty.'}
+        />
 
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
             <CircularProgress sx={{ color: BRAND.primary }} />
           </Box>
         ) : (
-          <Grid container spacing={3}>
+          <Grid container spacing={3} sx={{ alignItems: 'stretch' }}>
             {activePlans.map((p, i) => (
-              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={p.id}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={p.id} sx={{ display: 'flex' }}>
                 <Card
                   component={motion.div}
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.08, duration: 0.5 }}
+                  whileHover={{ y: -6 }}
                   sx={{
                     position: 'relative',
-                    height: '100%',
-                    border: p.is_popular ? `2px solid ${BRAND.primary}` : `1px solid ${BRAND.light}`,
-                    transition: 'all 0.3s',
-                    '&:hover': { transform: 'translateY(-6px)', boxShadow: SHADOW.cardHover },
+                    width: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    borderRadius: 4,
+                    border: p.is_popular
+                      ? `2px solid ${BRAND.primary}`
+                      : `1px solid ${BRAND.light}`,
+                    transition: 'box-shadow 0.25s ease',
+                    '&:hover': { boxShadow: SHADOW.cardHover },
                   }}
                 >
                   {p.is_popular && (
                     <Chip
                       label="POPULAR"
                       size="small"
-                      sx={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', bgcolor: BRAND.accent, color: BRAND.dark, fontWeight: 700, letterSpacing: '0.08em' }}
+                      sx={{
+                        position: 'absolute',
+                        top: 16,
+                        right: 16,
+                        bgcolor: BRAND.accent,
+                        color: BRAND.dark,
+                        fontWeight: 700,
+                        letterSpacing: '0.08em',
+                        zIndex: 2,
+                      }}
                     />
                   )}
-                  <CardContent sx={{ p: 4 }}>
+                  <CardContent sx={{ p: { xs: 3, md: 4 }, display: 'flex', flexDirection: 'column', flex: 1 }}>
                     <Typography variant="h4" sx={{ fontWeight: 800, color: 'text.primary', mb: 0.5 }}>
                       {p.kw} KW
                     </Typography>
@@ -169,7 +188,7 @@ export default function Pricing() {
 
                     <Divider sx={{ my: 2 }} />
 
-                    <Stack spacing={1.25} sx={{ mb: 3 }}>
+                    <Stack spacing={1.25} sx={{ mb: 3, flex: 1 }}>
                       {p.monthly_savings && <FeatureRow text={`Save ₹${p.monthly_savings.toLocaleString('en-IN')}/month`} />}
                       {p.panels_count && <FeatureRow text={`${p.panels_count} Solar Panels`} />}
                       {p.area_required && <FeatureRow text={`Area Required: ${p.area_required}`} />}

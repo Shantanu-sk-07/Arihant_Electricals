@@ -9,23 +9,17 @@ import Pricing from '@/pages/Pricing';
 import MediaPage from '@/pages/Media';
 import Contact from '@/pages/Contact';
 
-// Admin pages
+// Admin
 import Login from '@/pages/admin/Login';
-import Dashboard from '@/pages/admin/Dashboard';
-import HomeEditor from '@/pages/admin/HomeEditor';
-import AboutEditor from '@/pages/admin/AboutEditor';
-import ServicesManager from '@/pages/admin/ServicesManager';
-import PricingManager from '@/pages/admin/PricingManger';
-import BenefitsManager from '@/pages/admin/BenefitsManager';
-import TestimonialsManager from '@/pages/admin/TestimonialManager';
-import MediaManager from '@/pages/admin/MediaManager';
-import ContactsList from '@/pages/admin/ContactsList';
-import Settings from '@/pages/admin/Settings';
-import SiteContentManager from '@/pages/admin/SiteContentManager';
-
-// Layouts
 import AdminLayout from '@/layout/AdminLayout';
-import ProtectedRoute from '@/hooks/ProtectedRoute';
+import ProtectedRoute from '@/helpers/ProtectedRoute';
+
+import BasicDetailsEditor from '@/pages/admin/BasicDetailsEditor';
+import ServicesManager from '@/pages/admin/ServicesManager';
+import PricingManager from '@/pages/admin/PricingManager';
+import MediaManager from '@/pages/admin/MediaManager';
+import BenefitsTestimonialsManager from '@/pages/admin/BenefitsTestimonialsManager';
+import ExtraDetailsManager from '@/pages/admin/ExtraDetailsManager';
 
 export default function App() {
   return (
@@ -52,17 +46,13 @@ export default function App() {
           </ProtectedRoute>
         }
       >
-        <Route index element={<Dashboard />} />
-        <Route path="home" element={<HomeEditor />} />
-        <Route path="about" element={<AboutEditor />} />
+        <Route index element={<Navigate to="/admin/basic" replace />} />
+        <Route path="basic" element={<BasicDetailsEditor />} />
         <Route path="services" element={<ServicesManager />} />
         <Route path="pricing" element={<PricingManager />} />
-        <Route path="benefits" element={<BenefitsManager />} />
-        <Route path="testimonials" element={<TestimonialsManager />} />
         <Route path="media" element={<MediaManager />} />
-        <Route path="contacts" element={<ContactsList />} />
-        <Route path="settings" element={<Settings />} />
-        <Route path="content" element={<SiteContentManager />} />
+        <Route path="benefits" element={<BenefitsTestimonialsManager />} />
+        <Route path="extra" element={<ExtraDetailsManager />} />
       </Route>
 
       {/* ============ FALLBACK ============ */}

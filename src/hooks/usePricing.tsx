@@ -1,78 +1,54 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import type { PricingPlan } from '../types';
 
+const KEY = ['pricing'] as const;
+
+async function fetchPlans(): Promise<PricingPlan[]> {
+  const { data, error } = await supabase
+    .from('pricing_plans')
+    .select('*')
+    .order('sort_order', { ascending: true })
+    .order('kw', { ascending: true });
+  if (error) throw error;
+  return (data as PricingPlan[]) ?? [];
+}
+
 export function usePricing() {
-  const [plans, setPlans] = useState<PricingPlan[]>([]);
-  const [loading, setLoading] = useState(true);
+  const qc = useQueryClient();
+  const query = useQuery({ queryKey: KEY, queryFn: fetchPlans });
 
-  const load = useCallback(async () => {
-    const { data } = await supabase
-      .from('pricing_plans')
-      .select('*')
-      .order('sort_order', { ascending: true })
-      .order('kw', { ascending: true });
-    setPlans((data as PricingPlan[]) ?? []);
-    setLoading(false);
-  }, []);
+  const createPlan = useMutation({
+    mutationFn: async (p: Omit<PricingPlan, 'id' | 'created_at'>) => {
+      const { error } = await supabase.from('pricing_plans').insert(p);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+  });
 
-  useEffect(() => {
-    let cancelled = false;
+  const updatePlan = useMutation({
+    mutationFn: async ({ id, patch }: { id: string; patch: Partial<PricingPlan> }) => {
+      const { error } = await supabase.from('pricing_plans').update(patch).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+  });
 
-    const run = async () => {
-      const { data } = await supabase
-        .from('pricing_plans')
-        .select('*')
-        .order('sort_order', { ascending: true })
-        .order('kw', { ascending: true });
-      if (cancelled) return;
-      setPlans((data as PricingPlan[]) ?? []);
-      setLoading(false);
-    };
-
-    void run();
-
-    const channelName = `pricing-rt-${Math.random().toString(36).slice(2)}`;
-
-    const ch = supabase
-      .channel(channelName)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'pricing_plans' },
-        () => { if (!cancelled) void load(); }
-      )
-      .subscribe();
-
-    return () => {
-      cancelled = true;
-      supabase.removeChannel(ch);
-    };
-  }, [load]);
-
-  const createPlan = async (p: Omit<PricingPlan, 'id' | 'created_at'>) => {
-    const { error } = await supabase.from('pricing_plans').insert(p);
-    if (error) throw error;
-    load();
-  };
-
-  const updatePlan = async (id: string, patch: Partial<PricingPlan>) => {
-    const { error } = await supabase.from('pricing_plans').update(patch).eq('id', id);
-    if (error) throw error;
-    load();
-  };
-
-  const deletePlan = async (id: string) => {
-    const { error } = await supabase.from('pricing_plans').delete().eq('id', id);
-    if (error) throw error;
-    load();
-  };
+  const deletePlan = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('pricing_plans').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+  });
 
   return {
-    plans,
-    loading,
-    createPlan,
-    updatePlan,
-    deletePlan,
-    reload: load,
+    plans: query.data ?? [],
+    loading: query.isLoading,
+    error: query.error,
+    createPlan: createPlan.mutateAsync,
+    updatePlan: updatePlan.mutateAsync,
+    deletePlan: deletePlan.mutateAsync,
+    reload: () => qc.invalidateQueries({ queryKey: KEY }),
   };
 }

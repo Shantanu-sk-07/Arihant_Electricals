@@ -11,8 +11,16 @@ export default function About() {
   const { settings } = useSettings();
 
   const team = [
-    { name: settings.phone_1_name || 'Suraj Kumbhar', role: 'Founder & Director', phone: settings.phone_1 },
-    { name: settings.phone_2_name || 'Neeraj Patil', role: 'Co-Founder & Operations Head', phone: settings.phone_2 },
+    {
+      name: settings.phone_1_name || 'Suraj Kumbhar',
+      role: settings.team_1_role || 'Founder & Director',
+      phone: settings.phone_1,
+    },
+    {
+      name: settings.phone_2_name || 'Neeraj Patil',
+      role: settings.team_2_role || 'Co-Founder & Operations Head',
+      phone: settings.phone_2,
+    },
   ];
 
   return (

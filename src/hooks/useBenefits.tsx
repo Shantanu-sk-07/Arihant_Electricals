@@ -1,78 +1,54 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import type { SolarBenefit } from '../types';
 
+const KEY = ['benefits'] as const;
+
+async function fetchBenefits(): Promise<SolarBenefit[]> {
+  const { data, error } = await supabase
+    .from('solar_benefits')
+    .select('*')
+    .order('sort_order', { ascending: true })
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data as SolarBenefit[]) ?? [];
+}
+
 export function useBenefits() {
-  const [benefits, setBenefits] = useState<SolarBenefit[]>([]);
-  const [loading, setLoading] = useState(true);
+  const qc = useQueryClient();
+  const query = useQuery({ queryKey: KEY, queryFn: fetchBenefits });
 
-  const load = useCallback(async () => {
-    const { data } = await supabase
-      .from('solar_benefits')
-      .select('*')
-      .order('sort_order', { ascending: true })
-      .order('created_at', { ascending: false });
-    setBenefits((data as SolarBenefit[]) ?? []);
-    setLoading(false);
-  }, []);
+  const createBenefit = useMutation({
+    mutationFn: async (b: Omit<SolarBenefit, 'id' | 'created_at'>) => {
+      const { error } = await supabase.from('solar_benefits').insert(b);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+  });
 
-  useEffect(() => {
-    let cancelled = false;
+  const updateBenefit = useMutation({
+    mutationFn: async ({ id, patch }: { id: string; patch: Partial<SolarBenefit> }) => {
+      const { error } = await supabase.from('solar_benefits').update(patch).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+  });
 
-    const run = async () => {
-      const { data } = await supabase
-        .from('solar_benefits')
-        .select('*')
-        .order('sort_order', { ascending: true })
-        .order('created_at', { ascending: false });
-      if (cancelled) return;
-      setBenefits((data as SolarBenefit[]) ?? []);
-      setLoading(false);
-    };
-
-    void run();
-
-    const channelName = `benefits-rt-${Math.random().toString(36).slice(2)}`;
-
-    const ch = supabase
-      .channel(channelName)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'solar_benefits' },
-        () => { if (!cancelled) void load(); }
-      )
-      .subscribe();
-
-    return () => {
-      cancelled = true;
-      supabase.removeChannel(ch);
-    };
-  }, [load]);
-
-  const createBenefit = async (b: Omit<SolarBenefit, 'id' | 'created_at'>) => {
-    const { error } = await supabase.from('solar_benefits').insert(b);
-    if (error) throw error;
-    load();
-  };
-
-  const updateBenefit = async (id: string, patch: Partial<SolarBenefit>) => {
-    const { error } = await supabase.from('solar_benefits').update(patch).eq('id', id);
-    if (error) throw error;
-    load();
-  };
-
-  const deleteBenefit = async (id: string) => {
-    const { error } = await supabase.from('solar_benefits').delete().eq('id', id);
-    if (error) throw error;
-    load();
-  };
+  const deleteBenefit = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('solar_benefits').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+  });
 
   return {
-    benefits,
-    loading,
-    createBenefit,
-    updateBenefit,
-    deleteBenefit,
-    reload: load,
+    benefits: query.data ?? [],
+    loading: query.isLoading,
+    error: query.error,
+    createBenefit: createBenefit.mutateAsync,
+    updateBenefit: updateBenefit.mutateAsync,
+    deleteBenefit: deleteBenefit.mutateAsync,
+    reload: () => qc.invalidateQueries({ queryKey: KEY }),
   };
 }

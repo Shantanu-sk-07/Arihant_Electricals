@@ -1,71 +1,46 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import type { Testimonial } from '../types';
 
+const KEY = ['testimonials'] as const;
+
+async function fetchTestimonials(): Promise<Testimonial[]> {
+  const { data, error } = await supabase
+    .from('testimonials')
+    .select('*')
+    .order('sort_order', { ascending: true })
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data as Testimonial[]) ?? [];
+}
+
 export function useTestimonials() {
-  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
-  const [loading, setLoading] = useState(true);
+  const qc = useQueryClient();
+  const query = useQuery({ queryKey: KEY, queryFn: fetchTestimonials });
 
-  const load = useCallback(async () => {
-    const { data } = await supabase
-      .from('testimonials')
-      .select('*')
-      .order('sort_order', { ascending: true })
-      .order('created_at', { ascending: false });
-    setTestimonials((data as Testimonial[]) ?? []);
-    setLoading(false);
-  }, []);
+  const createTestimonial = useMutation({
+    mutationFn: async (t: Omit<Testimonial, 'id' | 'created_at'>) => {
+      const { error } = await supabase.from('testimonials').insert(t);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+  });
 
-  useEffect(() => {
-    let cancelled = false;
+  const updateTestimonial = useMutation({
+    mutationFn: async ({ id, patch }: { id: string; patch: Partial<Testimonial> }) => {
+      const { error } = await supabase.from('testimonials').update(patch).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+  });
 
-    const run = async () => {
-      const { data } = await supabase
-        .from('testimonials')
-        .select('*')
-        .order('sort_order', { ascending: true })
-        .order('created_at', { ascending: false });
-      if (cancelled) return;
-      setTestimonials((data as Testimonial[]) ?? []);
-      setLoading(false);
-    };
-
-    void run();
-
-    const channelName = `testimonials-rt-${Math.random().toString(36).slice(2)}`;
-
-    const ch = supabase
-      .channel(channelName)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'testimonials' },
-        () => { if (!cancelled) void load(); }
-      )
-      .subscribe();
-
-    return () => {
-      cancelled = true;
-      supabase.removeChannel(ch);
-    };
-  }, [load]);
-
-  const createTestimonial = async (t: Omit<Testimonial, 'id' | 'created_at'>) => {
-    const { error } = await supabase.from('testimonials').insert(t);
-    if (error) throw error;
-    load();
-  };
-
-  const updateTestimonial = async (id: string, patch: Partial<Testimonial>) => {
-    const { error } = await supabase.from('testimonials').update(patch).eq('id', id);
-    if (error) throw error;
-    load();
-  };
-
-  const deleteTestimonial = async (id: string) => {
-    const { error } = await supabase.from('testimonials').delete().eq('id', id);
-    if (error) throw error;
-    load();
-  };
+  const deleteTestimonial = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('testimonials').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+  });
 
   const uploadTestimonialImage = async (file: File): Promise<string> => {
     const path = `testimonials/${Date.now()}-${file.name}`;
@@ -76,12 +51,13 @@ export function useTestimonials() {
   };
 
   return {
-    testimonials,
-    loading,
-    createTestimonial,
-    updateTestimonial,
-    deleteTestimonial,
+    testimonials: query.data ?? [],
+    loading: query.isLoading,
+    error: query.error,
+    createTestimonial: createTestimonial.mutateAsync,
+    updateTestimonial: updateTestimonial.mutateAsync,
+    deleteTestimonial: deleteTestimonial.mutateAsync,
     uploadTestimonialImage,
-    reload: load,
+    reload: () => qc.invalidateQueries({ queryKey: KEY }),
   };
 }

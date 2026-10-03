@@ -1,73 +1,46 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import type { Media } from '../types';
 
+const KEY = ['media'] as const;
+
+async function fetchMedia(): Promise<Media[]> {
+  const { data, error } = await supabase
+    .from('media')
+    .select('*')
+    .order('sort_order', { ascending: true })
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data as Media[]) ?? [];
+}
+
 export function useMedia() {
-  const [media, setMedia] = useState<Media[]>([]);
-  const [loading, setLoading] = useState(true);
+  const qc = useQueryClient();
+  const query = useQuery({ queryKey: KEY, queryFn: fetchMedia });
 
-  const load = useCallback(async () => {
-    const { data } = await supabase
-      .from('media')
-      .select('*')
-      .order('sort_order', { ascending: true })
-      .order('created_at', { ascending: false });
-    setMedia((data as Media[]) ?? []);
-    setLoading(false);
-  }, []);
+  const createMedia = useMutation({
+    mutationFn: async (m: Omit<Media, 'id' | 'created_at'>) => {
+      const { error } = await supabase.from('media').insert(m);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+  });
 
-  useEffect(() => {
-    let cancelled = false;
+  const updateMedia = useMutation({
+    mutationFn: async ({ id, patch }: { id: string; patch: Partial<Media> }) => {
+      const { error } = await supabase.from('media').update(patch).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+  });
 
-    const run = async () => {
-      const { data } = await supabase
-        .from('media')
-        .select('*')
-        .order('sort_order', { ascending: true })
-        .order('created_at', { ascending: false });
-      if (cancelled) return;
-      setMedia((data as Media[]) ?? []);
-      setLoading(false);
-    };
-
-    void run();
-
-    const channelName = `media-rt-${Math.random().toString(36).slice(2)}`;
-
-    const ch = supabase
-      .channel(channelName)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'media' },
-        () => {
-          if (!cancelled) void load();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      cancelled = true;
-      supabase.removeChannel(ch);
-    };
-  }, [load]);
-
-  const createMedia = async (m: Omit<Media, 'id' | 'created_at'>) => {
-    const { error } = await supabase.from('media').insert(m);
-    if (error) throw error;
-    load();
-  };
-
-  const updateMedia = async (id: string, patch: Partial<Media>) => {
-    const { error } = await supabase.from('media').update(patch).eq('id', id);
-    if (error) throw error;
-    load();
-  };
-
-  const deleteMedia = async (id: string) => {
-    const { error } = await supabase.from('media').delete().eq('id', id);
-    if (error) throw error;
-    load();
-  };
+  const deleteMedia = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('media').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+  });
 
   const uploadFile = async (file: File): Promise<string> => {
     const path = `${Date.now()}-${file.name}`;
@@ -78,12 +51,13 @@ export function useMedia() {
   };
 
   return {
-    media,
-    loading,
-    createMedia,
-    updateMedia,
-    deleteMedia,
+    media: query.data ?? [],
+    loading: query.isLoading,
+    error: query.error,
+    createMedia: createMedia.mutateAsync,
+    updateMedia: updateMedia.mutateAsync,
+    deleteMedia: deleteMedia.mutateAsync,
     uploadFile,
-    reload: load,
+    reload: () => qc.invalidateQueries({ queryKey: KEY }),
   };
 }

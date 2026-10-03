@@ -1,79 +1,49 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import type { SiteSetting } from '../types';
 
+const KEY = ['settings'] as const;
+
+async function fetchSettings(): Promise<Record<string, string>> {
+  const { data, error } = await supabase.from('site_settings').select('*');
+  if (error) throw error;
+  const map: Record<string, string> = {};
+  (data as SiteSetting[] | null)?.forEach((s) => {
+    map[s.key] = s.value ?? '';
+  });
+  return map;
+}
+
 export function useSettings() {
-  const [settings, setSettings] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const qc = useQueryClient();
+  const query = useQuery({ queryKey: KEY, queryFn: fetchSettings });
 
-  const load = useCallback(async () => {
-    const { data, error: loadError } = await supabase.from('site_settings').select('*');
-    if (loadError) {
-      setError(loadError.message);
-      setLoading(false);
-      throw loadError;
-    }
-    const map: Record<string, string> = {};
-    (data as SiteSetting[] | null)?.forEach(s => {
-      map[s.key] = s.value ?? '';
-    });
-    setSettings(map);
-    setError(null);
-    setLoading(false);
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    void load().catch(() => {
-      if (cancelled) return;
-      setLoading(false);
-    });
-
-    const channelName = `settings-rt-${Math.random().toString(36).slice(2)}`;
-
-    const ch = supabase
-      .channel(channelName)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'site_settings' },
-        () => {
-          if (!cancelled) void load().catch(() => undefined);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      cancelled = true;
-      supabase.removeChannel(ch);
-    };
-  }, [load]);
+  const updateSettings = useMutation({
+    mutationFn: async (values: Record<string, string>) => {
+      const rows = Object.entries(values).map(([key, value]) => ({
+        key,
+        value,
+        updated_at: new Date().toISOString(),
+      }));
+      if (!rows.length) return;
+      const { error } = await supabase
+        .from('site_settings')
+        .upsert(rows, { onConflict: 'key' });
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+  });
 
   const updateSetting = async (key: string, value: string) => {
-    const { error: updateError } = await supabase
-      .from('site_settings')
-      .upsert(
-        { key, value, updated_at: new Date().toISOString() },
-        { onConflict: 'key' }
-      );
-    if (updateError) throw updateError;
-    setSettings((current) => ({ ...current, [key]: value }));
+    await updateSettings.mutateAsync({ [key]: value });
   };
 
-  const updateSettings = async (values: Record<string, string>) => {
-    const rows = Object.entries(values).map(([key, value]) => ({
-      key,
-      value,
-      updated_at: new Date().toISOString(),
-    }));
-    if (!rows.length) return;
-    const { error: updateError } = await supabase
-      .from('site_settings')
-      .upsert(rows, { onConflict: 'key' });
-    if (updateError) throw updateError;
-    setSettings((current) => ({ ...current, ...values }));
+  return {
+    settings: query.data ?? {},
+    loading: query.isLoading,
+    error: query.error,
+    updateSetting,
+    updateSettings: updateSettings.mutateAsync,
+    reload: () => qc.invalidateQueries({ queryKey: KEY }),
   };
-
-  return { settings, loading, error, updateSetting, updateSettings, reload: load };
 }

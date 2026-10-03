@@ -1,4 +1,7 @@
-import { Box, Container, Grid, Typography, Card, CardMedia, CardContent, Chip, Stack, Tabs, Tab, CircularProgress } from '@mui/material';
+import {
+  Box, Container, Grid, Typography, Card, CardMedia, CardContent,
+  Chip, Stack, Tabs, Tab, CircularProgress,
+} from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { Image as ImageIcon, VideoLibrary } from '@mui/icons-material';
@@ -6,6 +9,33 @@ import { useMedia } from '../hooks/useMedia';
 import SectionTitle from '../components/SectionTitle';
 import { BRAND, SHADOW } from '@/constants/Brand';
 import { useContent } from '@/hooks/useContent';
+
+/**
+ * Converts any common YouTube URL into an embed URL.
+ * Safe to call on already-embed URLs.
+ */
+function toYouTubeEmbed(url: string): string {
+  if (!url) return url;
+  const trimmed = url.trim();
+
+  // Already an embed URL
+  if (/youtube\.com\/embed\/[A-Za-z0-9_-]{11}/.test(trimmed)) return trimmed;
+
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtube\.com\/watch\?.*v=)([A-Za-z0-9_-]{11})/,
+    /youtu\.be\/([A-Za-z0-9_-]{11})/,
+    /youtube\.com\/shorts\/([A-Za-z0-9_-]{11})/,
+    /youtube\.com\/embed\/([A-Za-z0-9_-]{11})/,
+    /[?&]v=([A-Za-z0-9_-]{11})/,
+  ];
+
+  for (const pattern of patterns) {
+    const match = trimmed.match(pattern);
+    if (match) return `https://www.youtube.com/embed/${match[1]}`;
+  }
+
+  return trimmed;
+}
 
 export default function MediaPage() {
   const { media, loading } = useMedia();
@@ -16,19 +46,37 @@ export default function MediaPage() {
 
   return (
     <Box>
-      <Box sx={{ background: `linear-gradient(135deg, rgba(32,49,40,.94), rgba(85,122,70,.8)), url("${content['hero.image'] || 'https://images.unsplash.com/photo-1497440001374-f26997328c1b?auto=format&fit=crop&w=2000&q=85'}") center/cover`, color: 'white', py: { xs: 8, md: 12 }, textAlign: 'center' }}>
+      <Box
+        sx={{
+          background: `linear-gradient(135deg, rgba(32,49,40,.94), rgba(85,122,70,.8)), url("${content['hero.image'] || 'https://images.unsplash.com/photo-1497440001374-f26997328c1b?auto=format&fit=crop&w=2000&q=85'}") center/cover`,
+          color: 'white',
+          py: { xs: 8, md: 12 },
+          textAlign: 'center',
+        }}
+      >
         <Container>
-          <Typography variant="h2" sx={{ fontWeight: 800, fontSize: { xs: '2rem', md: '3rem' }, mb: 2 }}>
+          <Typography
+            variant="h2"
+            sx={{ fontWeight: 800, fontSize: { xs: '2rem', md: '3rem' }, mb: 2 }}
+          >
             {content['hero.title'] || 'Our Gallery'}
           </Typography>
           <Typography variant="h6" sx={{ fontWeight: 400, opacity: 0.9 }}>
-            {content['hero.subtitle'] || 'Real projects, real installations — see our solar work across Maharashtra.'}
+            {content['hero.subtitle'] ||
+              'Real projects, real installations — see our solar work across Maharashtra.'}
           </Typography>
         </Container>
       </Box>
 
       <Container sx={{ py: { xs: 6, md: 10 } }}>
-        <SectionTitle eyebrow={content['gallery.eyebrow'] || 'Media'} title={content['gallery.title'] || 'Installation Photos & Videos'} subtitle={content['gallery.subtitle'] || 'A visual showcase of our completed solar projects.'} />
+        <SectionTitle
+          eyebrow={content['gallery.eyebrow'] || 'Media'}
+          title={content['gallery.title'] || 'Installation Photos & Videos'}
+          subtitle={
+            content['gallery.subtitle'] ||
+            'A visual showcase of our completed solar projects.'
+          }
+        />
 
         <Stack sx={{ mb: 4, alignItems: 'center' }}>
           <Tabs
@@ -51,9 +99,24 @@ export default function MediaPage() {
               },
             }}
           >
-            <Tab icon={<ImageIcon sx={{ fontSize: 18 }} />} iconPosition="start" label="All" value="all" />
-            <Tab icon={<ImageIcon sx={{ fontSize: 18 }} />} iconPosition="start" label="Photos" value="image" />
-            <Tab icon={<VideoLibrary sx={{ fontSize: 18 }} />} iconPosition="start" label="Videos" value="video" />
+            <Tab
+              icon={<ImageIcon sx={{ fontSize: 18 }} />}
+              iconPosition="start"
+              label="All"
+              value="all"
+            />
+            <Tab
+              icon={<ImageIcon sx={{ fontSize: 18 }} />}
+              iconPosition="start"
+              label="Photos"
+              value="image"
+            />
+            <Tab
+              icon={<VideoLibrary sx={{ fontSize: 18 }} />}
+              iconPosition="start"
+              label="Videos"
+              value="video"
+            />
           </Tabs>
         </Stack>
 
@@ -64,7 +127,9 @@ export default function MediaPage() {
         ) : filtered.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 8 }}>
             <Typography sx={{ color: 'text.secondary' }}>
-              No {filter === 'all' ? 'media' : filter === 'image' ? 'photos' : 'videos'} yet.
+              No{' '}
+              {filter === 'all' ? 'media' : filter === 'image' ? 'photos' : 'videos'}{' '}
+              yet.
             </Typography>
           </Box>
         ) : (
@@ -83,16 +148,37 @@ export default function MediaPage() {
                       height: '100%',
                       border: `1px solid ${BRAND.light}`,
                       transition: 'all 0.3s',
-                      '&:hover': { transform: 'translateY(-6px)', boxShadow: SHADOW.cardHover },
+                      '&:hover': {
+                        transform: 'translateY(-6px)',
+                        boxShadow: SHADOW.cardHover,
+                      },
                     }}
                   >
                     {m.type === 'image' ? (
-                      <CardMedia component="img" height="220" image={m.url} alt={m.title} sx={{ objectFit: 'cover' }} />
+                      <CardMedia
+                        component="img"
+                        height="220"
+                        image={m.url}
+                        alt={m.title}
+                        sx={{ objectFit: 'cover' }}
+                      />
                     ) : (
-                      <Box sx={{ position: 'relative', paddingTop: '56.25%', bgcolor: '#000' }}>
+                      <Box
+                        sx={{
+                          position: 'relative',
+                          paddingTop: '56.25%',
+                          bgcolor: '#000',
+                        }}
+                      >
                         <iframe
-                          src={m.url}
-                          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}
+                          src={toYouTubeEmbed(m.url)}
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            width: '100%',
+                            height: '100%',
+                            border: 0,
+                          }}
                           allowFullScreen
                           title={m.title}
                         />
@@ -104,15 +190,35 @@ export default function MediaPage() {
                         label={m.type === 'image' ? 'Photo' : 'Video'}
                         sx={{
                           mb: 1,
-                          bgcolor: m.type === 'image' ? `${BRAND.primary}15` : `${BRAND.secondary}15`,
-                          color: m.type === 'image' ? BRAND.primary : BRAND.secondary,
+                          bgcolor:
+                            m.type === 'image'
+                              ? `${BRAND.primary}15`
+                              : `${BRAND.secondary}15`,
+                          color:
+                            m.type === 'image'
+                              ? BRAND.primary
+                              : BRAND.secondary,
                           fontWeight: 700,
                           fontSize: '0.7rem',
                         }}
                       />
-                      <Typography variant="h6" sx={{ fontWeight: 700, color: 'text.primary', mb: 0.5 }}>{m.title}</Typography>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          fontWeight: 700,
+                          color: 'text.primary',
+                          mb: 0.5,
+                        }}
+                      >
+                        {m.title}
+                      </Typography>
                       {m.description && (
-                        <Typography variant="body2" sx={{ color: 'text.secondary', lineHeight: 1.6 }}>{m.description}</Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{ color: 'text.secondary', lineHeight: 1.6 }}
+                        >
+                          {m.description}
+                        </Typography>
                       )}
                     </CardContent>
                   </Card>

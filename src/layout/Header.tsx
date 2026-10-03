@@ -1,10 +1,15 @@
 import { useState } from 'react';
 import {
-  AppBar, Toolbar, Typography, Button, Box, Avatar, IconButton,
+  AppBar, Toolbar, Typography, Button, Box, IconButton, Avatar,
   Drawer, List, ListItemButton, ListItemText, Divider, useMediaQuery,
   useTheme, Stack, Chip,
 } from '@mui/material';
-import { Menu as MenuIcon, Close as CloseIcon, Phone as PhoneIcon, WhatsApp as WhatsAppIcon } from '@mui/icons-material';
+import {
+  Menu as MenuIcon,
+  Close as CloseIcon,
+  Phone as PhoneIcon,
+  WhatsApp as WhatsAppIcon,
+} from '@mui/icons-material';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useSettings } from '../hooks/useSettings';
 import { BRAND } from '@/constants/Brand';
@@ -43,6 +48,7 @@ export default function Header() {
           borderBottom: 1,
           borderColor: 'divider',
           color: 'text.primary',
+          px: { xs: 0, md: 5 },
         }}
       >
         <Toolbar sx={{ py: { xs: 1, md: 1.5 }, px: { xs: 2, md: 4 } }}>
@@ -52,16 +58,31 @@ export default function Header() {
             to="/"
             direction="row"
             spacing={1.5}
-            sx={{ alignItems: 'center', textDecoration: 'none', color: 'inherit', flexGrow: { xs: 1, md: 0 } }}
+            sx={{
+              alignItems: 'center',
+              textDecoration: 'none',
+              color: 'inherit',
+              flexGrow: { xs: 1, md: 0 },
+            }}
           >
             {logo ? (
-              <Avatar src={logo} alt={siteName} sx={{ width: 40, height: 40 }} />
+              <Avatar
+                src={logo}
+                alt={siteName}
+                sx={{
+                  width: 40,
+                  height: 40,
+                  border: 1,
+                  borderColor: 'divider',
+                  bgcolor: 'background.paper',
+                }}
+              />
             ) : (
               <Box
                 sx={{
                   width: 40,
                   height: 40,
-                  borderRadius: 2,
+                  borderRadius: '50%',
                   background: `linear-gradient(135deg, ${BRAND.primary} 0%, ${BRAND.secondary} 100%)`,
                   display: 'flex',
                   alignItems: 'center',
@@ -228,7 +249,11 @@ export default function Header() {
                 href={`tel:${settings.phone_1.replace(/\s/g, '')}`}
                 startIcon={<PhoneIcon />}
                 variant="outlined"
-                sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.4)', '&:hover': { borderColor: 'white', bgcolor: 'rgba(255,255,255,0.1)' } }}
+                sx={{
+                  color: 'white',
+                  borderColor: 'rgba(255,255,255,0.4)',
+                  '&:hover': { borderColor: 'white', bgcolor: 'rgba(255,255,255,0.1)' },
+                }}
               >
                 {settings.phone_1}
               </Button>

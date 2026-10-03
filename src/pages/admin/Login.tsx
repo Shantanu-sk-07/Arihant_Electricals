@@ -1,6 +1,16 @@
 import {
-  Box, Card, CardContent, TextField, Button, Typography, Alert,
-  Stack, Link, InputAdornment, IconButton, CircularProgress,
+  Box,
+  Card,
+  CardContent,
+  TextField,
+  Button,
+  Typography,
+  Alert,
+  Stack,
+  Link,
+  InputAdornment,
+  IconButton,
+  CircularProgress,
 } from '@mui/material';
 import {
   Email as EmailIcon,
@@ -30,11 +40,20 @@ export default function Login() {
     setErr('');
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      nav('/admin');
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+if (error) throw error;
+
+console.log('LOGIN RESULT:', data);
+console.log('ACCESS TOKEN:', data.session?.access_token);
+console.log('USER:', data.session?.user);
+
+const { data: sessionData } = await supabase.auth.getSession();
+console.log('SESSION AFTER LOGIN:', sessionData);
+
+nav('/admin');
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unable to sign in. Please try again.';
+      const message =
+        error instanceof Error ? error.message : 'Unable to sign in. Please try again.';
       setErr(message);
       showSnackbar('error', message);
     } finally {
@@ -63,10 +82,20 @@ export default function Login() {
         },
       }}
     >
-      <Box sx={{ position: 'absolute', top: { xs: 16, sm: 24 }, right: { xs: 16, sm: 24 }, zIndex: 2, color: 'white' }}>
+      {/* Theme toggle — top right */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: { xs: 16, sm: 24 },
+          right: { xs: 16, sm: 24 },
+          zIndex: 2,
+          color: 'white',
+        }}
+      >
         <ThemeModeToggle />
       </Box>
-      {/* BACK TO WEBSITE — top-left */}
+
+      {/* Back to website — top left */}
       <Link
         component={RouterLink}
         to="/"
@@ -88,7 +117,10 @@ export default function Login() {
           backdropFilter: 'blur(8px)',
           zIndex: 2,
           transition: 'all 0.2s',
-          '&:hover': { bgcolor: 'rgba(255,255,255,0.2)', transform: 'translateX(-2px)' },
+          '&:hover': {
+            bgcolor: 'rgba(255,255,255,0.2)',
+            transform: 'translateX(-2px)',
+          },
         }}
       >
         <ArrowBackIcon sx={{ fontSize: 18 }} />
@@ -106,7 +138,7 @@ export default function Login() {
           overflow: 'hidden',
         }}
       >
-        {/* HEADER */}
+        {/* Header */}
         <Box
           sx={{
             background: `linear-gradient(135deg, ${BRAND.primary} 0%, ${BRAND.secondary} 100%)`,
@@ -131,19 +163,19 @@ export default function Login() {
           >
             <SolarIcon sx={{ fontSize: 36 }} />
           </Box>
-          <Typography variant="h5" sx={{ fontWeight: 800, letterSpacing: '-0.02em' }}>
+          <Typography sx={{ fontWeight: 800, letterSpacing: '-0.02em', fontSize: '1.25rem' }}>
             Arihant Electricals
           </Typography>
-          <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5, fontSize: '0.85rem' }}>
+          <Typography sx={{ opacity: 0.9, mt: 0.5, fontSize: '0.85rem' }}>
             Admin Control Panel
           </Typography>
         </Box>
 
         <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: BRAND.dark, mb: 0.5 }}>
+          <Typography sx={{ fontWeight: 700, color: BRAND.dark, mb: 0.5, fontSize: '1.1rem' }}>
             Welcome Back
           </Typography>
-          <Typography variant="body2" sx={{ color: '#64748B', mb: 3 }}>
+          <Typography sx={{ color: '#64748B', mb: 3, fontSize: '0.875rem' }}>
             Sign in to manage your website
           </Typography>
 
@@ -203,7 +235,11 @@ export default function Login() {
                           size="small"
                           aria-label={showPassword ? 'Hide password' : 'Show password'}
                         >
-                          {showPassword ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
+                          {showPassword ? (
+                            <VisibilityOffIcon fontSize="small" />
+                          ) : (
+                            <VisibilityIcon fontSize="small" />
+                          )}
                         </IconButton>
                       </InputAdornment>
                     ),
@@ -223,14 +259,19 @@ export default function Login() {
                 size="large"
                 fullWidth
                 disabled={loading}
-                startIcon={loading ? <CircularProgress size={18} sx={{ color: 'white' }} /> : null}
+                startIcon={
+                  loading ? <CircularProgress size={18} sx={{ color: 'white' }} /> : null
+                }
                 sx={{
                   bgcolor: BRAND.primary,
                   py: 1.5,
                   fontWeight: 700,
                   fontSize: '1rem',
                   boxShadow: `0 8px 24px ${BRAND.primary}40`,
-                  '&:hover': { bgcolor: BRAND.primaryDark, boxShadow: `0 12px 32px ${BRAND.primary}60` },
+                  '&:hover': {
+                    bgcolor: BRAND.primaryDark,
+                    boxShadow: `0 12px 32px ${BRAND.primary}60`,
+                  },
                   '&.Mui-disabled': { bgcolor: '#94A3B8' },
                 }}
               >
@@ -239,9 +280,8 @@ export default function Login() {
             </Stack>
           </form>
 
-          {/* BOTTOM LINK */}
           <Box sx={{ textAlign: 'center', mt: 3 }}>
-            <Typography variant="caption" sx={{ color: '#94A3B8', display: 'block', mb: 1 }}>
+            <Typography sx={{ color: '#94A3B8', display: 'block', mb: 1, fontSize: '0.75rem' }}>
               Not an admin?
             </Typography>
             <Link

@@ -1,58 +1,68 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box, Drawer, List, ListItemButton, ListItemText, Toolbar,
-  Typography, Button, AppBar, IconButton, useMediaQuery, useTheme,
-  Divider, Stack, Avatar, CircularProgress,
+  Typography, IconButton, useMediaQuery, useTheme, Divider,
+  Stack, Avatar, MenuItem, MenuList, AppBar, Popover,
 } from '@mui/material';
 import {
-  Menu as MenuIcon, Dashboard as DashboardIcon,
-  Home as HomeIcon, Info as InfoIcon,
-  MiscellaneousServices as ServicesIcon, Payments as PaymentsIcon,
-  TrendingUp as BenefitsIcon, Star as StarIcon,
-  PhotoLibrary as MediaIcon, Mail as MailIcon,
-  Settings as SettingsIcon, Logout as LogoutIcon,
-  EditNote as ContentIcon,
+  Menu as MenuIcon, Logout as LogoutIcon,
+  Home as HomeIcon, MiscellaneousServices as ServicesIcon,
+  Payments as PaymentsIcon, Star as StarIcon,
+  PhotoLibrary as MediaIcon, MoreHoriz as ExtraIcon,
 } from '@mui/icons-material';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { BRAND } from '@/constants/Brand';
 import ThemeModeToggle from './ThemeModeToggle';
-import { showSnackbar } from '@/components/ToastMessage';
+import { showSnackbar, showConfirmation } from '@/components/ToastMessage';
+import { useSettings } from '@/hooks/useSettings';
 
 const DRAWER_WIDTH = 260;
 
 const ITEMS = [
-  { to: '/admin', label: 'Dashboard', icon: <DashboardIcon /> },
-  { to: '/admin/content', label: 'Website Content', icon: <ContentIcon /> },
-  { to: '/admin/home', label: 'Home Content', icon: <HomeIcon /> },
-  { to: '/admin/about', label: 'About Content', icon: <InfoIcon /> },
+  { to: '/admin/basic', label: 'Basic Details', icon: <HomeIcon /> },
   { to: '/admin/services', label: 'Services', icon: <ServicesIcon /> },
   { to: '/admin/pricing', label: 'Pricing', icon: <PaymentsIcon /> },
-  { to: '/admin/benefits', label: 'Why Solar', icon: <BenefitsIcon /> },
-  { to: '/admin/testimonials', label: 'Testimonials', icon: <StarIcon /> },
   { to: '/admin/media', label: 'Media', icon: <MediaIcon /> },
-  { to: '/admin/contacts', label: 'Contacts', icon: <MailIcon /> },
-  { to: '/admin/settings', label: 'Settings', icon: <SettingsIcon /> },
+  { to: '/admin/benefits', label: 'Benefits & Testimonials', icon: <StarIcon /> },
+  { to: '/admin/extra', label: 'Extra Details', icon: <ExtraIcon /> },
 ];
 
 export default function AdminLayout() {
   const nav = useNavigate();
   const { pathname } = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [loggingOut, setLoggingOut] = useState(false);
+  const [userEmail, setUserEmail] = useState<string>('');
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { settings } = useSettings();
+
+  const siteName = settings.site_name || 'Arihant Electricals';
+  const logoUrl = settings.logo_url;
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setUserEmail(data.session?.user.email ?? '');
+    });
+  }, []);
 
   const logout = async () => {
-    setLoggingOut(true);
+    setAnchorEl(null);
+    const ok = await showConfirmation({
+      message: 'Are you sure you want to sign out?',
+      title: 'Confirm Logout',
+      confirmText: 'Logout',
+      confirmColor: 'error',
+      icon: '👋',
+    });
+    if (!ok) return;
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       nav('/');
     } catch (error) {
       showSnackbar('error', error instanceof Error ? error.message : 'Unable to sign out.');
-    } finally {
-      setLoggingOut(false);
     }
   };
 
@@ -62,27 +72,39 @@ export default function AdminLayout() {
         sx={{
           background: `linear-gradient(135deg, ${BRAND.dark} 0%, ${BRAND.primaryDark} 100%)`,
           color: 'white',
+          minHeight: 72,
         }}
       >
-        <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
-          <Avatar
-            sx={{
-              bgcolor: BRAND.accent,
-              color: BRAND.dark,
-              fontWeight: 800,
-              width: 36,
-              height: 36,
-            }}
-          >
-            A
-          </Avatar>
-          <Box>
-            <Typography sx={{ fontWeight: 800, fontSize: '0.95rem', lineHeight: 1.2 }}>
-              Arihant Admin
+        <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', width: '100%' }}>
+          {logoUrl ? (
+            <Avatar
+              src={logoUrl}
+              alt={siteName}
+              sx={{
+                width: 42,
+                height: 42,
+                bgcolor: 'white',
+                flexShrink: 0,
+              }}
+            />
+          ) : (
+            <Avatar
+              sx={{
+                bgcolor: BRAND.accent,
+                color: BRAND.dark,
+                fontWeight: 800,
+                width: 42,
+                height: 42,
+              }}
+            >
+              {siteName.charAt(0)}
+            </Avatar>
+          )}
+          <Box sx={{ minWidth: 0, flex: 1 }}>
+            <Typography sx={{ fontWeight: 800, fontSize: '0.95rem', lineHeight: 1.2 }} noWrap>
+              {siteName}
             </Typography>
-            <Typography sx={{ fontSize: '0.7rem', opacity: 0.8 }}>
-              Control Panel
-            </Typography>
+            <Typography sx={{ fontSize: '0.7rem', opacity: 0.8 }}>Admin Panel</Typography>
           </Box>
         </Stack>
       </Toolbar>
@@ -108,9 +130,7 @@ export default function AdminLayout() {
                 },
               }}
             >
-              <Box sx={{ mr: 1.5, display: 'flex', color: 'inherit' }}>
-                {item.icon}
-              </Box>
+              <Box sx={{ mr: 1.5, display: 'flex', color: 'inherit' }}>{item.icon}</Box>
               <ListItemText
                 primary={item.label}
                 slotProps={{
@@ -123,29 +143,16 @@ export default function AdminLayout() {
       </List>
 
       <Divider />
-      <Box sx={{ p: 2 }}>
-        <Button
-          fullWidth
-          variant="outlined"
-          startIcon={loggingOut ? <CircularProgress size={18} color="inherit" /> : <LogoutIcon />}
-          onClick={logout}
-          disabled={loggingOut}
-          sx={{
-            borderColor: BRAND.error,
-            color: BRAND.error,
-            fontWeight: 600,
-            '&:hover': { bgcolor: `${BRAND.error}10`, borderColor: BRAND.error },
-          }}
-        >
-          Logout
-        </Button>
+      <Box sx={{ p: 1.5 }}>
+        <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary', textAlign: 'center' }}>
+          © {new Date().getFullYear()} {siteName}
+        </Typography>
       </Box>
     </Box>
   );
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
-      {/* MOBILE TOP BAR */}
       {isMobile && (
         <AppBar
           position="fixed"
@@ -166,12 +173,21 @@ export default function AdminLayout() {
               <MenuIcon />
             </IconButton>
             <Typography sx={{ ml: 2, fontWeight: 700 }}>Admin Panel</Typography>
-            <Box sx={{ ml: 'auto' }}><ThemeModeToggle /></Box>
+            <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <ThemeModeToggle />
+              <IconButton onClick={(e) => setAnchorEl(e.currentTarget)} aria-label="Account menu">
+                <Avatar
+                  src={logoUrl || undefined}
+                  sx={{ width: 32, height: 32, bgcolor: BRAND.primary, fontSize: '0.85rem' }}
+                >
+                  {userEmail.charAt(0).toUpperCase() || 'A'}
+                </Avatar>
+              </IconButton>
+            </Box>
           </Toolbar>
         </AppBar>
       )}
 
-      {/* MOBILE DRAWER */}
       {isMobile ? (
         <Drawer
           variant="temporary"
@@ -188,7 +204,6 @@ export default function AdminLayout() {
           {drawerContent}
         </Drawer>
       ) : (
-        /* DESKTOP PERMANENT DRAWER */
         <Drawer
           variant="permanent"
           sx={{
@@ -206,12 +221,10 @@ export default function AdminLayout() {
         </Drawer>
       )}
 
-      {/* MAIN */}
       <Box
         component="main"
         sx={{
           flexGrow: 1,
-          p: { xs: 2, md: 3 },
           bgcolor: 'background.default',
           minHeight: '100vh',
           mt: { xs: 8, md: 0 },
@@ -219,12 +232,84 @@ export default function AdminLayout() {
         }}
       >
         {!isMobile && (
-          <Stack direction="row" sx={{ mb: 1, justifyContent: 'flex-end' }}>
+          <Box
+            sx={{
+              position: 'sticky',
+              top: 0,
+              zIndex: 10,
+              bgcolor: 'background.paper',
+              borderBottom: 1,
+              borderColor: 'divider',
+              px: 3,
+              py: 1.5,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+              gap: 1,
+            }}
+          >
             <ThemeModeToggle />
-          </Stack>
+            <IconButton
+              onClick={(e) => setAnchorEl(e.currentTarget)}
+              aria-label="Account menu"
+              sx={{ p: 0.5 }}
+            >
+              <Avatar
+                src={logoUrl || undefined}
+                sx={{ width: 36, height: 36, bgcolor: BRAND.primary, fontSize: '0.9rem' }}
+              >
+                {userEmail.charAt(0).toUpperCase() || 'A'}
+              </Avatar>
+            </IconButton>
+          </Box>
         )}
-        <Outlet />
+
+        <Box sx={{ p: { xs: 2, md: 3 } }}>
+          <Outlet />
+        </Box>
       </Box>
+
+      <Popover
+        open={Boolean(anchorEl)}
+        anchorEl={anchorEl}
+        onClose={() => setAnchorEl(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        slotProps={{
+          paper: {
+            sx: {
+              mt: 1,
+              minWidth: 220,
+              borderRadius: 2,
+              boxShadow: '0 12px 32px rgba(0,0,0,0.12)',
+              overflow: 'hidden',
+            },
+          },
+        }}
+      >
+        <Box sx={{ px: 2, py: 1.5, borderBottom: 1, borderColor: 'divider' }}>
+          <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+            Signed in as
+          </Typography>
+          <Typography sx={{ fontSize: '0.9rem', fontWeight: 600 }} noWrap>
+            {userEmail || 'Admin'}
+          </Typography>
+        </Box>
+
+        <MenuList sx={{ py: 0.5 }}>
+          <MenuItem
+            onClick={logout}
+            sx={{
+              py: 1.5,
+              color: BRAND.error,
+              '&:hover': { bgcolor: `${BRAND.error}10` },
+            }}
+          >
+            <LogoutIcon sx={{ mr: 1.5, fontSize: 20 }} />
+            Logout
+          </MenuItem>
+        </MenuList>
+      </Popover>
     </Box>
   );
 }
