@@ -93,7 +93,7 @@ export default function Pricing() {
                     <StatBox label="Recommended" value={`${recommendation.plan.kw} KW`} color={BRAND.primary} />
                   </Grid>
                   <Grid size={{ xs: 6, md: 3 }}>
-                    <StatBox label="Your Cost" value={`₹${(recommendation.plan.final_cost / 1000).toFixed(0)}K`} color={BRAND.dark} />
+                    <StatBox label="Your Cost" value={`₹${(recommendation.plan.final_cost / 1000).toFixed(0)}K`} color="text.primary" />
                   </Grid>
                   <Grid size={{ xs: 6, md: 3 }}>
                     <StatBox label="Monthly Saving" value={`₹${recommendation.plan.monthly_savings || 0}`} color={BRAND.success} />
@@ -103,7 +103,7 @@ export default function Pricing() {
                   </Grid>
                 </Grid>
               ) : (
-                <Typography sx={{ color: '#94A3B8', textAlign: 'center' }}>
+                <Typography sx={{ color: 'text.secondary', textAlign: 'center' }}>
                   Enter a bill amount to see recommendation
                 </Typography>
               )}
@@ -176,7 +176,7 @@ export default function Pricing() {
                       <Typography sx={{ fontWeight: 800, fontSize: '2.25rem', color: 'primary.main', lineHeight: 1 }}>
                         ₹{p.final_cost.toLocaleString('en-IN')}
                       </Typography>
-                      <Typography variant="body2" sx={{ color: '#94A3B8', textDecoration: 'line-through' }}>
+                      <Typography variant="body2" sx={{ color: 'text.secondary', textDecoration: 'line-through' }}>
                         ₹{p.total_cost.toLocaleString('en-IN')} total
                       </Typography>
                       <Chip

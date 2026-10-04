@@ -133,7 +133,8 @@ export default function Contact() {
               <Card sx={{ p: 3, background: `linear-gradient(135deg, ${BRAND.success}15 0%, ${BRAND.success}05 100%)`, border: `1px solid ${BRAND.success}30` }}>
                 <Stack spacing={2}>
                   <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>
-                    💬 Prefer WhatsApp? Chat with us instantly.
+                    <WhatsApp sx={{ verticalAlign: 'middle', mr: 0.75, fontSize: 18 }} />
+                    Prefer WhatsApp? Chat with us instantly.
                   </Typography>
                   <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
                     <Button

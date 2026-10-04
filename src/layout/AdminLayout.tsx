@@ -16,6 +16,7 @@ import { BRAND } from '@/constants/Brand';
 import ThemeModeToggle from './ThemeModeToggle';
 import { showSnackbar, showConfirmation } from '@/components/ToastMessage';
 import { useSettings } from '@/hooks/useSettings';
+import AdminContentSearch from './AdminContentSearch';
 
 const DRAWER_WIDTH = 260;
 
@@ -54,7 +55,7 @@ export default function AdminLayout() {
       title: 'Confirm Logout',
       confirmText: 'Logout',
       confirmColor: 'error',
-      icon: '👋',
+      icon: <LogoutIcon />,
     });
     if (!ok) return;
     try {
@@ -153,41 +154,6 @@ export default function AdminLayout() {
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
-      {isMobile && (
-        <AppBar
-          position="fixed"
-          elevation={0}
-          sx={{
-            bgcolor: 'background.paper',
-            borderBottom: 1,
-            borderColor: 'divider',
-            color: 'text.primary',
-          }}
-        >
-          <Toolbar>
-            <IconButton
-              onClick={() => setMobileOpen(true)}
-              aria-label="Open admin menu"
-              sx={{ color: 'text.primary' }}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Typography sx={{ ml: 2, fontWeight: 700 }}>Admin Panel</Typography>
-            <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <ThemeModeToggle />
-              <IconButton onClick={(e) => setAnchorEl(e.currentTarget)} aria-label="Account menu">
-                <Avatar
-                  src={logoUrl || undefined}
-                  sx={{ width: 32, height: 32, bgcolor: BRAND.primary, fontSize: '0.85rem' }}
-                >
-                  {userEmail.charAt(0).toUpperCase() || 'A'}
-                </Avatar>
-              </IconButton>
-            </Box>
-          </Toolbar>
-        </AppBar>
-      )}
-
       {isMobile ? (
         <Drawer
           variant="temporary"
@@ -227,42 +193,99 @@ export default function AdminLayout() {
           flexGrow: 1,
           bgcolor: 'background.default',
           minHeight: '100vh',
-          mt: { xs: 8, md: 0 },
           width: { xs: '100%', md: `calc(100% - ${DRAWER_WIDTH}px)` },
+          minWidth: 0,
         }}
       >
-        {!isMobile && (
-          <Box
-            sx={{
-              position: 'sticky',
-              top: 0,
-              zIndex: 10,
-              bgcolor: 'background.paper',
-              borderBottom: 1,
-              borderColor: 'divider',
-              px: 3,
-              py: 1.5,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'flex-end',
-              gap: 1,
-            }}
-          >
-            <ThemeModeToggle />
+        <AppBar
+          position="sticky"
+          elevation={0}
+          sx={{
+            bgcolor: 'background.paper',
+            borderBottom: 1,
+            borderColor: 'divider',
+            color: 'text.primary',
+          }}
+        >
+          <Toolbar sx={{ gap: { xs: 0.5, sm: 1.5 }, px: { xs: 1, sm: 2, md: 3 } }}>
+            {isMobile && (
             <IconButton
-              onClick={(e) => setAnchorEl(e.currentTarget)}
-              aria-label="Account menu"
-              sx={{ p: 0.5 }}
+              onClick={() => setMobileOpen(true)}
+              aria-label="Open admin menu"
+              sx={{ color: 'text.primary' }}
+            >
+              <MenuIcon />
+            </IconButton>
+            )}
+            <Stack
+              direction="row"
+              spacing={{ xs: 0.75, sm: 1 }}
+              sx={{ alignItems: 'center', minWidth: 0, flexShrink: 0 }}
             >
               <Avatar
                 src={logoUrl || undefined}
-                sx={{ width: 36, height: 36, bgcolor: BRAND.primary, fontSize: '0.9rem' }}
+                alt={siteName}
+                sx={{
+                  width: { xs: 30, sm: 36 },
+                  height: { xs: 30, sm: 36 },
+                  bgcolor: BRAND.primary,
+                  color: 'white',
+                  fontWeight: 700,
+                }}
               >
-                {userEmail.charAt(0).toUpperCase() || 'A'}
+                {siteName.charAt(0).toUpperCase()}
               </Avatar>
-            </IconButton>
-          </Box>
-        )}
+              <Typography
+                sx={{
+                  fontWeight: 700,
+                  maxWidth: { xs: 82, sm: 180, md: 200 },
+                  fontSize: { xs: '0.78rem', sm: '0.9rem' },
+                }}
+                noWrap
+              >
+                {siteName}
+              </Typography>
+            </Stack>
+            <Box
+              sx={{
+                flex: 1,
+                minWidth: 0,
+                display: 'flex',
+                justifyContent: 'center',
+                px: { xs: 0.5, sm: 2 },
+              }}
+            >
+              <AdminContentSearch />
+            </Box>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: { xs: 0, sm: 0.5 },
+                flexShrink: 0,
+              }}
+            >
+              <ThemeModeToggle />
+              <IconButton
+                onClick={(e) => setAnchorEl(e.currentTarget)}
+                aria-label="Account menu"
+                sx={{ p: 0.5 }}
+              >
+                <Avatar
+                  src={logoUrl || undefined}
+                  sx={{
+                    width: { xs: 30, sm: 36 },
+                    height: { xs: 30, sm: 36 },
+                    bgcolor: BRAND.primary,
+                    fontSize: '0.9rem',
+                  }}
+                >
+                  {userEmail.charAt(0).toUpperCase() || 'A'}
+                </Avatar>
+              </IconButton>
+            </Box>
+          </Toolbar>
+        </AppBar>
 
         <Box sx={{ p: { xs: 2, md: 3 } }}>
           <Outlet />

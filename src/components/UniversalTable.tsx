@@ -326,7 +326,7 @@ const paginatedData = useMemo(
   if (loading) {
     return (
       <Paper
-        sx={{ p: 4, borderRadius: 3, textAlign: "center", bgcolor: "#f5f7fa" }}
+        sx={{ p: 4, borderRadius: 3, textAlign: "center", bgcolor: "background.default" }}
       >
         <CircularProgress size={50} sx={{ color: "#1976d2" }} />
         <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>

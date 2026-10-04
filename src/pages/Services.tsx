@@ -165,7 +165,7 @@ export default function Services() {
 
             {!services.length && (
               <Box sx={{ textAlign: 'center', py: 8 }}>
-                <Typography variant="h6" sx={{ color: '#94A3B8' }}>
+                <Typography variant="h6" sx={{ color: 'text.secondary' }}>
                   No services available yet.
                 </Typography>
               </Box>

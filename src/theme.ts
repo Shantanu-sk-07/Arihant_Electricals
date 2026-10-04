@@ -65,6 +65,7 @@ export function createSolarTheme(mode: PaletteMode) {
             borderRadius: 12,
             transition: 'transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease',
             '&:hover': { transform: 'translateY(-1px)' },
+            '&:active': { transform: 'scale(0.98)' },
             '&.MuiButton-containedPrimary': {
               boxShadow: dark
               ? '0 8px 24px rgba(0,0,0,.24)'
@@ -82,6 +83,21 @@ export function createSolarTheme(mode: PaletteMode) {
               ? '0 12px 32px rgba(0,0,0,.2)'
               : '0 12px 32px rgba(32,49,40,.07)',
             transition: 'transform 220ms ease, box-shadow 220ms ease, background-color 180ms ease',
+            '&:hover': {
+              transform: 'translateY(-3px) scale(1.005)',
+              boxShadow: dark
+                ? '0 18px 40px rgba(0,0,0,.32)'
+                : '0 18px 40px rgba(32,49,40,.12)',
+            },
+          },
+        },
+      },
+      MuiIconButton: {
+        styleOverrides: {
+          root: {
+            transition: 'transform 180ms ease, background-color 180ms ease',
+            '&:hover': { transform: 'scale(1.06)' },
+            '&:active': { transform: 'scale(0.94)' },
           },
         },
       },

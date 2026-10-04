@@ -120,7 +120,7 @@ export default function ServicesManager() {
       title: 'Delete Service',
       confirmText: 'Delete',
       confirmColor: 'error',
-      icon: '🗑️',
+      icon: <Delete />,
     });
     if (!ok) return;
     try {
@@ -227,10 +227,10 @@ export default function ServicesManager() {
         }}
       >
         <Box>
-          <Typography sx={{ fontWeight: 700, color: BRAND.dark, fontSize: '1.5rem' }}>
+          <Typography sx={{ fontWeight: 700, color: 'text.primary', fontSize: '1.5rem' }}>
             Services
           </Typography>
-          <Typography sx={{ color: '#64748B', mt: 0.5, fontSize: '0.875rem' }}>
+          <Typography sx={{ color: 'text.secondary', mt: 0.5, fontSize: '0.875rem' }}>
             These cards appear on the Home and Services pages.
           </Typography>
         </Box>
@@ -250,7 +250,7 @@ export default function ServicesManager() {
       >
         <Table>
           <TableHead>
-            <TableRow sx={{ bgcolor: BRAND.light }}>
+            <TableRow sx={{ bgcolor: 'action.hover' }}>
               <TableCell sx={{ fontWeight: 700 }}>Order</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>Title</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>Icon</TableCell>
@@ -268,7 +268,7 @@ export default function ServicesManager() {
               </TableRow>
             ) : services.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} align="center" sx={{ py: 6, color: '#94A3B8' }}>
+                <TableCell colSpan={6} align="center" sx={{ py: 6, color: 'text.secondary' }}>
                   No services yet. Click "Add Service" to start.
                 </TableCell>
               </TableRow>
@@ -277,10 +277,10 @@ export default function ServicesManager() {
                 <TableRow key={s.id} hover>
                   <TableCell>{s.sort_order}</TableCell>
                   <TableCell>
-                    <Typography sx={{ fontWeight: 600, color: BRAND.dark }}>
+                    <Typography sx={{ fontWeight: 600, color: 'text.primary' }}>
                       {s.title}
                     </Typography>
-                    <Typography sx={{ color: '#94A3B8', fontSize: '0.75rem' }}>
+                    <Typography sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
                       {s.short_description?.slice(0, 60) || '—'}
                     </Typography>
                   </TableCell>
@@ -288,7 +288,7 @@ export default function ServicesManager() {
                     <Chip
                       size="small"
                       label={s.icon || '—'}
-                      sx={{ bgcolor: BRAND.light, color: BRAND.primary, fontWeight: 600 }}
+                      sx={{ bgcolor: 'action.hover', color: BRAND.primary, fontWeight: 600 }}
                     />
                   </TableCell>
                   <TableCell>
@@ -320,10 +320,10 @@ export default function ServicesManager() {
 
       {/* SECTION 2 — SERVICES PAGE COPY */}
       <Box sx={{ mb: 3 }}>
-        <Typography sx={{ fontWeight: 700, color: BRAND.dark, fontSize: '1.5rem' }}>
+        <Typography sx={{ fontWeight: 700, color: 'text.primary', fontSize: '1.5rem' }}>
           Services Page Copy
         </Typography>
-        <Typography sx={{ color: '#64748B', mt: 0.5, fontSize: '0.875rem' }}>
+        <Typography sx={{ color: 'text.secondary', mt: 0.5, fontSize: '0.875rem' }}>
           Hero banner and call-to-action text shown on the Services page.
         </Typography>
       </Box>
@@ -337,7 +337,7 @@ export default function ServicesManager() {
           <form onSubmit={copyMethods.handleSubmit(onSubmitCopy)}>
             <Card sx={{ borderRadius: 2, mb: 3 }}>
               <CardContent>
-                <Typography sx={{ fontWeight: 700, mb: 2, color: BRAND.dark }}>
+                <Typography sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>
                   Hero Banner
                 </Typography>
                 <Grid container spacing={2}>
@@ -387,7 +387,7 @@ export default function ServicesManager() {
                             }}
                           />
                         </Button>
-                        {heroImage && (
+                        {heroImage ? (
                           <Box
                             component="img"
                             src={heroImage}
@@ -400,6 +400,10 @@ export default function ServicesManager() {
                               border: `1px solid ${BRAND.light}`,
                             }}
                           />
+                        ) : (
+                          <Typography variant="caption" color="text.secondary">
+                            Image not uploaded
+                          </Typography>
                         )}
                       </Stack>
                     </Stack>
@@ -410,7 +414,7 @@ export default function ServicesManager() {
 
             <Card sx={{ borderRadius: 2, mb: 3 }}>
               <CardContent>
-                <Typography sx={{ fontWeight: 700, mb: 2, color: BRAND.dark }}>
+                <Typography sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>
                   Bottom Call-to-Action
                 </Typography>
                 <Grid container spacing={2}>
@@ -536,6 +540,11 @@ export default function ServicesManager() {
                         }}
                       />
                     </Box>
+                  )}
+                  {!serviceImageUrl && (
+                    <Typography sx={{ mt: 1, fontSize: '0.75rem', color: 'text.secondary' }}>
+                      Image not uploaded
+                    </Typography>
                   )}
                 </Box>
                 <NumericField

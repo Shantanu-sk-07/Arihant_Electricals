@@ -122,8 +122,8 @@ function IconGrid({ value, onSelect }: IconGridProps) {
                 p: 1,
                 borderRadius: 2,
                 border: `1.5px solid ${active ? BRAND.primary : BRAND.light}`,
-                bgcolor: active ? `${BRAND.primary}12` : '#fff',
-                color: active ? BRAND.primary : '#475569',
+                bgcolor: active ? `${BRAND.primary}12` : 'background.paper',
+                color: active ? BRAND.primary : 'text.secondary',
                 transition: 'all 0.15s ease',
                 '&:hover': {
                   borderColor: BRAND.primary,
@@ -279,10 +279,10 @@ export function IconPicker({
             px: 2,
             py: 1.5,
             borderBottom: `1px solid ${BRAND.light}`,
-            bgcolor: '#FAFBF8',
+            bgcolor: 'background.paper',
           }}
         >
-          <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: BRAND.dark }}>
+          <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: 'text.primary' }}>
             Pick an icon
           </Typography>
           <IconButton size="small" onClick={handleClose} aria-label="Close icon picker">
@@ -317,7 +317,7 @@ export function IconPicker({
             px: 2,
             py: 1.25,
             borderTop: `1px solid ${BRAND.light}`,
-            bgcolor: '#FAFBF8',
+            bgcolor: 'background.paper',
           }}
         >
           <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>

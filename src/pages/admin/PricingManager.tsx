@@ -157,7 +157,7 @@ export default function PricingManager() {
       title: 'Delete Pricing Plan',
       confirmText: 'Delete',
       confirmColor: 'error',
-      icon: '🗑️',
+      icon: <Delete />,
     });
     if (!ok) return;
     try {
@@ -265,10 +265,10 @@ export default function PricingManager() {
         }}
       >
         <Box>
-          <Typography sx={{ fontWeight: 700, color: BRAND.dark, fontSize: '1.5rem' }}>
+          <Typography sx={{ fontWeight: 700, color: 'text.primary', fontSize: '1.5rem' }}>
             Pricing Plans
           </Typography>
-          <Typography sx={{ color: '#64748B', mt: 0.5, fontSize: '0.875rem' }}>
+          <Typography sx={{ color: 'text.secondary', mt: 0.5, fontSize: '0.875rem' }}>
             These plans show on Home and Pricing pages.
           </Typography>
         </Box>
@@ -288,7 +288,7 @@ export default function PricingManager() {
       >
         <Table>
           <TableHead>
-            <TableRow sx={{ bgcolor: BRAND.light }}>
+            <TableRow sx={{ bgcolor: 'action.hover' }}>
               <TableCell sx={{ fontWeight: 700 }}>KW</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>Total</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>Subsidy</TableCell>
@@ -307,7 +307,7 @@ export default function PricingManager() {
               </TableRow>
             ) : plans.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} align="center" sx={{ py: 6, color: '#94A3B8' }}>
+                <TableCell colSpan={7} align="center" sx={{ py: 6, color: 'text.secondary' }}>
                   No pricing plans yet. Click "Add Plan" to start.
                 </TableCell>
               </TableRow>
@@ -315,10 +315,10 @@ export default function PricingManager() {
               plans.map((p) => (
                 <TableRow key={p.id} hover>
                   <TableCell>
-                    <Typography sx={{ fontWeight: 700, color: BRAND.dark }}>
+                    <Typography sx={{ fontWeight: 700, color: 'text.primary' }}>
                       {p.kw} KW
                     </Typography>
-                    <Typography sx={{ color: '#94A3B8', fontSize: '0.75rem' }}>
+                    <Typography sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
                       {p.system_type?.toUpperCase()}
                     </Typography>
                   </TableCell>
@@ -343,7 +343,7 @@ export default function PricingManager() {
                         <Chip
                           size="small"
                           label="Popular"
-                          sx={{ bgcolor: BRAND.accent, color: BRAND.dark, fontWeight: 700 }}
+                          sx={{ bgcolor: BRAND.accent, color: 'text.primary', fontWeight: 700 }}
                         />
                       )}
                     </Stack>
@@ -367,10 +367,10 @@ export default function PricingManager() {
 
       {/* SECTION 2 — PRICING PAGE COPY */}
       <Box sx={{ mb: 3 }}>
-        <Typography sx={{ fontWeight: 700, color: BRAND.dark, fontSize: '1.5rem' }}>
+        <Typography sx={{ fontWeight: 700, color: 'text.primary', fontSize: '1.5rem' }}>
           Pricing Page Copy
         </Typography>
-        <Typography sx={{ color: '#64748B', mt: 0.5, fontSize: '0.875rem' }}>
+        <Typography sx={{ color: 'text.secondary', mt: 0.5, fontSize: '0.875rem' }}>
           Hero banner, calculator, plans section, subsidy section and CTA text.
         </Typography>
       </Box>
@@ -384,7 +384,7 @@ export default function PricingManager() {
           <form onSubmit={copyMethods.handleSubmit(onSubmitCopy)}>
             <Card sx={{ borderRadius: 2, mb: 3 }}>
               <CardContent>
-                <Typography sx={{ fontWeight: 700, mb: 2, color: BRAND.dark }}>
+                <Typography sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>
                   Hero Banner
                 </Typography>
                 <Grid container spacing={2}>
@@ -438,7 +438,7 @@ export default function PricingManager() {
                             }}
                           />
                         </Button>
-                        {heroImage && (
+                        {heroImage ? (
                           <Box
                             component="img"
                             src={heroImage}
@@ -451,6 +451,10 @@ export default function PricingManager() {
                               border: `1px solid ${BRAND.light}`,
                             }}
                           />
+                        ) : (
+                          <Typography variant="caption" color="text.secondary">
+                            Image not uploaded
+                          </Typography>
                         )}
                       </Stack>
                     </Stack>
@@ -461,7 +465,7 @@ export default function PricingManager() {
 
             <Card sx={{ borderRadius: 2, mb: 3 }}>
               <CardContent>
-                <Typography sx={{ fontWeight: 700, mb: 2, color: BRAND.dark }}>
+                <Typography sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>
                   Savings Calculator
                 </Typography>
                 <Grid container spacing={2}>
@@ -488,7 +492,7 @@ export default function PricingManager() {
 
             <Card sx={{ borderRadius: 2, mb: 3 }}>
               <CardContent>
-                <Typography sx={{ fontWeight: 700, mb: 2, color: BRAND.dark }}>
+                <Typography sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>
                   Plans Section Heading
                 </Typography>
                 <Grid container spacing={2}>
@@ -523,7 +527,7 @@ export default function PricingManager() {
 
             <Card sx={{ borderRadius: 2, mb: 3 }}>
               <CardContent>
-                <Typography sx={{ fontWeight: 700, mb: 2, color: BRAND.dark }}>
+                <Typography sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>
                   Subsidy Section
                 </Typography>
                 <Grid container spacing={2}>
@@ -558,7 +562,7 @@ export default function PricingManager() {
 
             <Card sx={{ borderRadius: 2, mb: 3 }}>
               <CardContent>
-                <Typography sx={{ fontWeight: 700, mb: 2, color: BRAND.dark }}>
+                <Typography sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>
                   Bottom Call-to-Action
                 </Typography>
                 <Grid container spacing={2}>

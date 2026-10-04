@@ -278,7 +278,7 @@ export default function BasicDetailsEditor() {
       title: 'Reset Logo',
       confirmText: 'Reset',
       confirmColor: 'warning',
-      icon: '↺',
+      icon: <RestartAlt />,
     });
     if (!ok) return;
     try {
@@ -340,7 +340,7 @@ export default function BasicDetailsEditor() {
       title: 'Delete Message',
       confirmText: 'Delete',
       confirmColor: 'error',
-      icon: '🗑️',
+      icon: <Delete />,
     });
     if (!ok) return;
     try {
@@ -363,10 +363,10 @@ export default function BasicDetailsEditor() {
         }}
       >
         <Box>
-          <Typography sx={{ fontWeight: 700, color: BRAND.dark, fontSize: '1.5rem' }}>
+          <Typography sx={{ fontWeight: 700, color: 'text.primary', fontSize: '1.5rem' }}>
             Basic Details
           </Typography>
-          <Typography sx={{ color: '#64748B', mt: 0.5, fontSize: '0.875rem' }}>
+          <Typography sx={{ color: 'text.secondary', mt: 0.5, fontSize: '0.875rem' }}>
             Manage logo, contact info, socials and site stats. These apply across the whole website.
           </Typography>
         </Box>
@@ -403,7 +403,7 @@ export default function BasicDetailsEditor() {
             {/* LOGO */}
             <Card sx={{ mb: 3, borderRadius: 2 }}>
               <CardContent>
-                <Typography sx={{ fontWeight: 700, mb: 2, color: BRAND.dark }}>
+                <Typography sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>
                   Logo
                 </Typography>
                 <Stack
@@ -420,7 +420,7 @@ export default function BasicDetailsEditor() {
                       justifyContent: 'center',
                       border: `1px dashed ${BRAND.light}`,
                       borderRadius: 2,
-                      bgcolor: '#F8FAF7',
+                      bgcolor: 'background.default',
                       overflow: 'hidden',
                       flexShrink: 0,
                     }}
@@ -438,7 +438,7 @@ export default function BasicDetailsEditor() {
                       />
                     ) : (
                       <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
-                        No logo
+                        Image not uploaded
                       </Typography>
                     )}
                   </Box>
@@ -484,7 +484,7 @@ export default function BasicDetailsEditor() {
             {/* SITE INFO */}
             <Card sx={{ mb: 3, borderRadius: 2 }}>
               <CardContent>
-                <Typography sx={{ fontWeight: 700, mb: 2, color: BRAND.dark }}>
+                <Typography sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>
                   Site Info
                 </Typography>
                 <Grid container spacing={2}>
@@ -520,7 +520,7 @@ export default function BasicDetailsEditor() {
             {/* CONTACT */}
             <Card sx={{ mb: 3, borderRadius: 2 }}>
               <CardContent>
-                <Typography sx={{ fontWeight: 700, mb: 2, color: BRAND.dark }}>
+                <Typography sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>
                   Contact Information
                 </Typography>
                 <Grid container spacing={2}>
@@ -581,7 +581,7 @@ export default function BasicDetailsEditor() {
             {/* WHATSAPP */}
             <Card sx={{ mb: 3, borderRadius: 2 }}>
               <CardContent>
-                <Typography sx={{ fontWeight: 700, mb: 2, color: BRAND.dark }}>
+                <Typography sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>
                   WhatsApp
                 </Typography>
                 <Grid container spacing={2}>
@@ -614,7 +614,7 @@ export default function BasicDetailsEditor() {
             {/* SOCIALS */}
             <Card sx={{ mb: 3, borderRadius: 2 }}>
               <CardContent>
-                <Typography sx={{ fontWeight: 700, mb: 2, color: BRAND.dark }}>
+                <Typography sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>
                   Social Media Links
                 </Typography>
                 <Grid container spacing={2}>
@@ -659,7 +659,7 @@ export default function BasicDetailsEditor() {
                         icon={s.icon}
                         label={s.label}
                         size="small"
-                        sx={{ bgcolor: BRAND.light, color: BRAND.primary }}
+                        sx={{ bgcolor: 'action.hover', color: BRAND.primary }}
                       />
                     ))}
                   </Stack>
@@ -670,7 +670,7 @@ export default function BasicDetailsEditor() {
             {/* STATS */}
             <Card sx={{ mb: 3, borderRadius: 2 }}>
               <CardContent>
-                <Typography sx={{ fontWeight: 700, mb: 2, color: BRAND.dark }}>
+                <Typography sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>
                   Home Page Stats
                 </Typography>
                 <Grid container spacing={2}>
@@ -722,7 +722,7 @@ export default function BasicDetailsEditor() {
           >
             <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
               <MailIcon sx={{ color: BRAND.primary }} />
-              <Typography sx={{ fontWeight: 700, color: BRAND.dark }}>
+              <Typography sx={{ fontWeight: 700, color: 'text.primary' }}>
                 Contact Messages
               </Typography>
             </Stack>
@@ -738,7 +738,7 @@ export default function BasicDetailsEditor() {
           <TableContainer component={Paper} sx={{ boxShadow: 'none', border: `1px solid ${BRAND.light}` }}>
             <Table size="small">
               <TableHead>
-                <TableRow sx={{ bgcolor: BRAND.light }}>
+                <TableRow sx={{ bgcolor: 'action.hover' }}>
                   <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>Name</TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>Email</TableCell>
@@ -756,7 +756,7 @@ export default function BasicDetailsEditor() {
                   </TableRow>
                 ) : !contactsQuery.data || contactsQuery.data.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} align="center" sx={{ py: 4, color: '#94A3B8' }}>
+                    <TableCell colSpan={6} align="center" sx={{ py: 4, color: 'text.secondary' }}>
                       No messages yet.
                     </TableCell>
                   </TableRow>

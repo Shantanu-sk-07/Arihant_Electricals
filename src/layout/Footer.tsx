@@ -19,6 +19,7 @@ import {
   YouTube as YouTubeIcon,
   WhatsApp as WhatsAppIcon,
   SolarPower as SolarIcon,
+  Bolt as BoltIcon,
 } from '@mui/icons-material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useSettings } from '../hooks/useSettings';
@@ -285,9 +286,10 @@ export default function Footer() {
           >
             © {year} {siteName}. All rights reserved.
           </Typography>
-          <Typography variant="caption" sx={{ opacity: 0.7 }}>
-            Made with ⚡ in Maharashtra
-          </Typography>
+          <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center', opacity: 0.7 }}>
+            <BoltIcon fontSize="small" />
+            <Typography variant="caption">Made in Maharashtra</Typography>
+          </Stack>
         </Stack>
       </Container>
     </Box>

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
-import type { SiteContent } from '../types';
+import type { SiteContent, SiteSetting } from '../types';
 
 const key = (page: string) => ['content', page] as const;
 
@@ -10,10 +10,43 @@ async function fetchContent(page: string): Promise<Record<string, string>> {
     .select('*')
     .eq('page', page);
   if (error) throw error;
+
   const map: Record<string, string> = {};
   (data as SiteContent[] | null)?.forEach((c) => {
     map[`${c.section}.${c.key}`] = c.value ?? '';
   });
+
+  if (page === 'home') {
+    const { data: settings, error: settingsError } = await supabase
+      .from('site_settings')
+      .select('key,value')
+      .in('key', [
+        'eyebrow',
+        'title',
+        'subtitle',
+        'step1.title',
+        'step1.description',
+        'step2.title',
+        'step2.description',
+        'step3.title',
+        'step3.description',
+        'step4.title',
+        'step4.description',
+      ]);
+    if (settingsError) throw settingsError;
+
+    const legacySteps: Record<string, string> = {};
+    (settings as Pick<SiteSetting, 'key' | 'value'>[] | null)?.forEach((setting) => {
+      legacySteps[setting.key] = setting.value ?? '';
+    });
+    if (Object.keys(legacySteps).some((key) => key.startsWith('step'))) {
+      for (const [key, value] of Object.entries(legacySteps)) {
+        const contentKey = `steps.${key}`;
+        if (map[contentKey] === undefined) map[contentKey] = value;
+      }
+    }
+  }
+
   return map;
 }
 

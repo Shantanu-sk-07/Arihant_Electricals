@@ -9,6 +9,7 @@ import {
   Close as CloseIcon,
   Phone as PhoneIcon,
   WhatsApp as WhatsAppIcon,
+  Bolt as BoltIcon,
 } from '@mui/icons-material';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useSettings } from '../hooks/useSettings';
@@ -63,6 +64,7 @@ export default function Header() {
               textDecoration: 'none',
               color: 'inherit',
               flexGrow: { xs: 1, md: 0 },
+              minWidth: 0,
             }}
           >
             {logo ? (
@@ -99,11 +101,12 @@ export default function Header() {
               variant="h6"
               sx={{
                 fontWeight: 800,
-                fontSize: { xs: '1rem', md: '1.15rem' },
+                fontSize: { xs: '0.76rem', sm: '1rem', md: '1.15rem' },
                 color: 'text.primary',
                 letterSpacing: '-0.02em',
-                display: { xs: 'none', sm: 'block' },
+                minWidth: 0,
               }}
+              noWrap
             >
               {siteName}
             </Typography>
@@ -270,7 +273,8 @@ export default function Header() {
               Chat on WhatsApp
             </Button>
             <Chip
-              label={`⚡ ${settings.tagline || 'Powering Maharashtra'}`}
+              icon={<BoltIcon sx={{ color: 'inherit !important' }} />}
+              label={settings.tagline || 'Powering Maharashtra'}
               sx={{ bgcolor: 'rgba(255,255,255,0.1)', color: 'white', fontSize: '0.75rem' }}
             />
           </Stack>

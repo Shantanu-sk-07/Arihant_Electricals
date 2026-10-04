@@ -172,10 +172,10 @@ nav('/admin');
         </Box>
 
         <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
-          <Typography sx={{ fontWeight: 700, color: BRAND.dark, mb: 0.5, fontSize: '1.1rem' }}>
+          <Typography sx={{ fontWeight: 700, color: 'text.primary', mb: 0.5, fontSize: '1.1rem' }}>
             Welcome Back
           </Typography>
-          <Typography sx={{ color: '#64748B', mb: 3, fontSize: '0.875rem' }}>
+          <Typography sx={{ color: 'text.secondary', mb: 3, fontSize: '0.875rem' }}>
             Sign in to manage your website
           </Typography>
 
@@ -272,7 +272,7 @@ nav('/admin');
                     bgcolor: BRAND.primaryDark,
                     boxShadow: `0 12px 32px ${BRAND.primary}60`,
                   },
-                  '&.Mui-disabled': { bgcolor: '#94A3B8' },
+                  '&.Mui-disabled': { bgcolor: 'action.disabledBackground' },
                 }}
               >
                 {loading ? 'Signing in...' : 'Sign In'}
@@ -281,7 +281,7 @@ nav('/admin');
           </form>
 
           <Box sx={{ textAlign: 'center', mt: 3 }}>
-            <Typography sx={{ color: '#94A3B8', display: 'block', mb: 1, fontSize: '0.75rem' }}>
+            <Typography sx={{ color: 'text.secondary', display: 'block', mb: 1, fontSize: '0.75rem' }}>
               Not an admin?
             </Typography>
             <Link

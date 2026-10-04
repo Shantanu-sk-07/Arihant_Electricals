@@ -4,9 +4,10 @@ import {
   TableHead, TableRow, Paper, IconButton, Chip, Grid,
   Dialog, DialogTitle, DialogContent, DialogActions, Stack,
   CircularProgress, Card, CardContent, Divider, MenuItem, TextField,
+  ToggleButton, ToggleButtonGroup, Alert,
 } from '@mui/material';
 import {
-  Edit, Delete, Add, Close as CloseIcon, Save, CloudUpload,
+  Edit, Delete, Add, Close as CloseIcon, Save, CloudUpload, Link as LinkIcon,
 } from '@mui/icons-material';
 import { FormProvider, useForm, useWatch } from 'react-hook-form';
 import { useMedia } from '@/hooks/useMedia';
@@ -35,6 +36,8 @@ interface PageCopyValues {
   gallery_subtitle: string;
 }
 
+type VideoSource = 'upload' | 'external';
+
 const EMPTY_MEDIA: MediaFormValues = {
   title: '',
   description: '',
@@ -43,29 +46,15 @@ const EMPTY_MEDIA: MediaFormValues = {
   sort_order: '0',
 };
 
-/**
- * Converts any common YouTube URL into an embed URL.
- * Accepts:
- *   https://www.youtube.com/watch?v=VIDEO_ID
- *   https://youtu.be/VIDEO_ID
- *   https://m.youtube.com/watch?v=VIDEO_ID
- *   https://www.youtube.com/shorts/VIDEO_ID
- *   https://www.youtube.com/embed/VIDEO_ID (already correct)
- * Falls back to the original string if no match.
- */
 function toYouTubeEmbed(url: string): string {
   if (!url) return url;
   const trimmed = url.trim();
-
-  // Already an embed URL
   if (/youtube\.com\/embed\/[A-Za-z0-9_-]{11}/.test(trimmed)) return trimmed;
 
-  // Extract video ID from any known pattern
   const patterns = [
     /(?:youtube\.com\/watch\?v=|youtube\.com\/watch\?.*v=)([A-Za-z0-9_-]{11})/,
     /youtu\.be\/([A-Za-z0-9_-]{11})/,
     /youtube\.com\/shorts\/([A-Za-z0-9_-]{11})/,
-    /youtube\.com\/embed\/([A-Za-z0-9_-]{11})/,
     /[?&]v=([A-Za-z0-9_-]{11})/,
   ];
 
@@ -86,6 +75,8 @@ export default function MediaManager() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Media | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [videoSource, setVideoSource] = useState<VideoSource>('external');
   const [savingCopy, setSavingCopy] = useState(false);
   const [uploadingHero, setUploadingHero] = useState(false);
 
@@ -105,6 +96,15 @@ export default function MediaManager() {
   const mediaType = useWatch({ control: mediaMethods.control, name: 'type' });
   const mediaUrl = useWatch({ control: mediaMethods.control, name: 'url' });
 
+  // Detect if the current URL is a storage URL (uploaded) → auto-select source
+  useEffect(() => {
+    if (mediaType !== 'video') return;
+    if (!mediaUrl) return;
+    const isStorage = mediaUrl.includes('/storage/v1/object/public/media/');
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setVideoSource(isStorage ? 'upload' : 'external');
+  }, [mediaUrl, mediaType]);
+
   useEffect(() => {
     if (Object.keys(content).length === 0) return;
     copyMethods.reset({
@@ -121,6 +121,7 @@ export default function MediaManager() {
   const handleAdd = () => {
     setEditing(null);
     mediaMethods.reset(EMPTY_MEDIA);
+    setVideoSource('external');
     setOpen(true);
   };
 
@@ -133,6 +134,8 @@ export default function MediaManager() {
       url: m.url,
       sort_order: String(m.sort_order ?? 0),
     });
+    const isStorage = m.url.includes('/storage/v1/object/public/media/');
+    setVideoSource(isStorage ? 'upload' : 'external');
     setOpen(true);
   };
 
@@ -153,15 +156,38 @@ export default function MediaManager() {
     }
   };
 
-  const handleMediaUpload = async (file: File) => {
+  const handleMediaImageUpload = async (file: File) => {
     setUploading(true);
     try {
       const url = await uploadFile(file);
       mediaMethods.setValue('url', url);
+      setVideoSource('external'); // reset for next time
     } catch (e) {
       showSnackbar('error', e instanceof Error ? e.message : 'Upload failed');
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleVideoUpload = async (file: File) => {
+    // 25 MB limit for video uploads
+    if (file.size > 25 * 1024 * 1024) {
+      showSnackbar('error', 'Video must be smaller than 25 MB. For larger videos, upload to YouTube and paste the URL.');
+      return;
+    }
+    setUploadingVideo(true);
+    try {
+      const safe = file.name.replace(/[^\w.-]/g, '-');
+      const path = `videos/${Date.now()}-${safe}`;
+      const { error } = await supabase.storage.from('media').upload(path, file);
+      if (error) throw error;
+      const { data } = supabase.storage.from('media').getPublicUrl(path);
+      mediaMethods.setValue('url', data.publicUrl);
+      showSnackbar('success', 'Video uploaded. Save to publish.');
+    } catch (e) {
+      showSnackbar('error', e instanceof Error ? e.message : 'Upload failed');
+    } finally {
+      setUploadingVideo(false);
     }
   };
 
@@ -182,8 +208,11 @@ export default function MediaManager() {
   };
 
   const onSubmitMedia = async (values: MediaFormValues) => {
-    const finalUrl =
-      values.type === 'video' ? toYouTubeEmbed(values.url.trim()) : values.url.trim();
+    let finalUrl = values.url.trim();
+
+    if (values.type === 'video' && videoSource === 'external') {
+      finalUrl = toYouTubeEmbed(finalUrl);
+    }
 
     if (!values.title.trim() || !finalUrl) {
       showSnackbar('warning', 'Title and URL are required.');
@@ -525,15 +554,18 @@ export default function MediaManager() {
                   fullWidth
                   label="Type"
                   value={mediaType}
-                  onChange={(e) =>
-                    mediaMethods.setValue('type', e.target.value as 'image' | 'video')
-                  }
+                  onChange={(e) => {
+                    mediaMethods.setValue('type', e.target.value as 'image' | 'video');
+                    mediaMethods.setValue('url', '');
+                    setVideoSource('external');
+                  }}
                 >
                   <MenuItem value="image">Image</MenuItem>
-                  <MenuItem value="video">Video (YouTube URL)</MenuItem>
+                  <MenuItem value="video">Video</MenuItem>
                 </TextField>
 
-                {mediaType === 'image' ? (
+                {/* IMAGE */}
+                {mediaType === 'image' && (
                   <Box>
                     <Button
                       variant="outlined"
@@ -549,7 +581,7 @@ export default function MediaManager() {
                         accept="image/*"
                         onChange={(e) => {
                           const f = e.target.files?.[0];
-                          if (f) handleMediaUpload(f);
+                          if (f) handleMediaImageUpload(f);
                           e.target.value = '';
                         }}
                       />
@@ -570,14 +602,96 @@ export default function MediaManager() {
                       </Box>
                     )}
                   </Box>
-                ) : (
-                  <TextInputField
-                    name="url"
-                    label="YouTube URL"
-                    required
-                    inputType="all"
-                    maxLength={300}
-                  />
+                )}
+
+                {/* VIDEO */}
+                {mediaType === 'video' && (
+                  <Stack spacing={2}>
+                    <Box>
+                      <Typography
+                        sx={{
+                          mb: 1,
+                          fontWeight: 600,
+                          fontSize: '0.875rem',
+                          color: 'text.secondary',
+                        }}
+                      >
+                        Video Source
+                      </Typography>
+                      <ToggleButtonGroup
+                        value={videoSource}
+                        exclusive
+                        onChange={(_, next) => {
+                          if (!next) return;
+                          setVideoSource(next as VideoSource);
+                          mediaMethods.setValue('url', '');
+                        }}
+                        size="small"
+                        fullWidth
+                      >
+                        <ToggleButton value="external">
+                          <LinkIcon sx={{ mr: 1, fontSize: 18 }} />
+                          External URL
+                        </ToggleButton>
+                        <ToggleButton value="upload">
+                          <CloudUpload sx={{ mr: 1, fontSize: 18 }} />
+                          Upload File
+                        </ToggleButton>
+                      </ToggleButtonGroup>
+                    </Box>
+
+                    {videoSource === 'external' ? (
+                      <TextInputField
+                        name="url"
+                        label="Video URL (YouTube / Vimeo / any video link)"
+                        required
+                        inputType="all"
+                        maxLength={500}
+                      />
+                    ) : (
+                      <Box>
+                        <Alert severity="info" sx={{ mb: 2 }}>
+                          Max 25 MB. For larger videos, upload to YouTube and use External URL.
+                        </Alert>
+                        <Button
+                          variant="outlined"
+                          component="label"
+                          disabled={uploadingVideo}
+                          sx={{ borderColor: BRAND.primary, color: BRAND.primary }}
+                          startIcon={
+                            uploadingVideo ? <CircularProgress size={18} /> : <CloudUpload />
+                          }
+                        >
+                          {uploadingVideo ? 'Uploading…' : 'Upload Video File'}
+                          <input
+                            type="file"
+                            hidden
+                            accept="video/mp4,video/webm,video/ogg,video/quicktime"
+                            onChange={(e) => {
+                              const f = e.target.files?.[0];
+                              if (f) handleVideoUpload(f);
+                              e.target.value = '';
+                            }}
+                          />
+                        </Button>
+                        {mediaUrl && mediaUrl.includes('/storage/v1/object/public/media/') && (
+                          <Box sx={{ mt: 2 }}>
+                            <Box
+                              component="video"
+                              src={mediaUrl}
+                              controls
+                              sx={{
+                                width: '100%',
+                                maxHeight: 260,
+                                borderRadius: 2,
+                                bgcolor: '#000',
+                              }}
+                            />
+                          </Box>
+                        )}
+                      </Box>
+                    )}
+                  </Stack>
                 )}
 
                 <NumericField
@@ -596,7 +710,7 @@ export default function MediaManager() {
               <Button
                 type="submit"
                 variant="contained"
-                disabled={savingMedia || uploading}
+                disabled={savingMedia || uploading || uploadingVideo}
                 startIcon={
                   savingMedia ? <CircularProgress size={18} color="inherit" /> : <Save />
                 }

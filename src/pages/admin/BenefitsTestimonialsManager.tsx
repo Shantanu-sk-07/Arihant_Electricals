@@ -111,7 +111,7 @@ export default function BenefitsTestimonialsManager() {
       title: 'Delete Benefit',
       confirmText: 'Delete',
       confirmColor: 'error',
-      icon: '🗑️',
+      icon: <Delete />,
     });
     if (!ok) return;
     try {
@@ -176,7 +176,7 @@ export default function BenefitsTestimonialsManager() {
       title: 'Delete Testimonial',
       confirmText: 'Delete',
       confirmColor: 'error',
-      icon: '🗑️',
+      icon: <Delete />,
     });
     if (!ok) return;
     try {
@@ -244,10 +244,10 @@ export default function BenefitsTestimonialsManager() {
         }}
       >
         <Box>
-          <Typography sx={{ fontWeight: 700, color: BRAND.dark, fontSize: '1.5rem' }}>
+          <Typography sx={{ fontWeight: 700, color: 'text.primary', fontSize: '1.5rem' }}>
             Benefits
           </Typography>
-          <Typography sx={{ color: '#64748B', mt: 0.5, fontSize: '0.875rem' }}>
+          <Typography sx={{ color: 'text.secondary', mt: 0.5, fontSize: '0.875rem' }}>
             "Why Go Solar" cards shown on the Home page.
           </Typography>
         </Box>
@@ -267,7 +267,7 @@ export default function BenefitsTestimonialsManager() {
       >
         <Table>
           <TableHead>
-            <TableRow sx={{ bgcolor: BRAND.light }}>
+            <TableRow sx={{ bgcolor: 'action.hover' }}>
               <TableCell sx={{ fontWeight: 700 }}>Order</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>Title</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>Stat</TableCell>
@@ -285,7 +285,7 @@ export default function BenefitsTestimonialsManager() {
               </TableRow>
             ) : benefits.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} align="center" sx={{ py: 6, color: '#94A3B8' }}>
+                <TableCell colSpan={6} align="center" sx={{ py: 6, color: 'text.secondary' }}>
                   No benefits yet. Click "Add Benefit" to start.
                 </TableCell>
               </TableRow>
@@ -294,10 +294,10 @@ export default function BenefitsTestimonialsManager() {
                 <TableRow key={b.id} hover>
                   <TableCell>{b.sort_order}</TableCell>
                   <TableCell>
-                    <Typography sx={{ fontWeight: 600, color: BRAND.dark }}>
+                    <Typography sx={{ fontWeight: 600, color: 'text.primary' }}>
                       {b.title}
                     </Typography>
-                    <Typography sx={{ color: '#94A3B8', fontSize: '0.75rem' }}>
+                    <Typography sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
                       {b.description.slice(0, 60)}...
                     </Typography>
                   </TableCell>
@@ -316,7 +316,7 @@ export default function BenefitsTestimonialsManager() {
                     <Chip
                       size="small"
                       label={b.icon || '—'}
-                      sx={{ bgcolor: BRAND.light, color: BRAND.primary }}
+                      sx={{ bgcolor: 'action.hover', color: BRAND.primary }}
                     />
                   </TableCell>
                   <TableCell>
@@ -361,10 +361,10 @@ export default function BenefitsTestimonialsManager() {
         }}
       >
         <Box>
-          <Typography sx={{ fontWeight: 700, color: BRAND.dark, fontSize: '1.5rem' }}>
+          <Typography sx={{ fontWeight: 700, color: 'text.primary', fontSize: '1.5rem' }}>
             Testimonials
           </Typography>
-          <Typography sx={{ color: '#64748B', mt: 0.5, fontSize: '0.875rem' }}>
+          <Typography sx={{ color: 'text.secondary', mt: 0.5, fontSize: '0.875rem' }}>
             Customer reviews shown on the Home page.
           </Typography>
         </Box>
@@ -384,7 +384,7 @@ export default function BenefitsTestimonialsManager() {
       >
         <Table>
           <TableHead>
-            <TableRow sx={{ bgcolor: BRAND.light }}>
+            <TableRow sx={{ bgcolor: 'action.hover' }}>
               <TableCell sx={{ fontWeight: 700 }}>Customer</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>Rating</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>Message</TableCell>
@@ -401,7 +401,7 @@ export default function BenefitsTestimonialsManager() {
               </TableRow>
             ) : testimonials.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} align="center" sx={{ py: 6, color: '#94A3B8' }}>
+                <TableCell colSpan={5} align="center" sx={{ py: 6, color: 'text.secondary' }}>
                   No testimonials yet. Click "Add Testimonial" to start.
                 </TableCell>
               </TableRow>
@@ -418,11 +418,11 @@ export default function BenefitsTestimonialsManager() {
                       </Avatar>
                       <Box>
                         <Typography
-                          sx={{ fontWeight: 600, color: BRAND.dark, fontSize: '0.9rem' }}
+                          sx={{ fontWeight: 600, color: 'text.primary', fontSize: '0.9rem' }}
                         >
                           {t.name}
                         </Typography>
-                        <Typography sx={{ color: '#94A3B8', fontSize: '0.75rem' }}>
+                        <Typography sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
                           {t.location || '—'}
                         </Typography>
                       </Box>
@@ -432,7 +432,7 @@ export default function BenefitsTestimonialsManager() {
                     <Rating value={t.rating} readOnly size="small" sx={{ color: BRAND.accent }} />
                   </TableCell>
                   <TableCell sx={{ maxWidth: 300 }}>
-                    <Typography sx={{ color: '#475569', fontSize: '0.875rem' }}>
+                    <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
                       {t.message.slice(0, 80)}
                       {t.message.length > 80 ? '...' : ''}
                     </Typography>
@@ -593,7 +593,7 @@ export default function BenefitsTestimonialsManager() {
                     sx={{
                       mb: 0.5,
                       fontWeight: 600,
-                      color: '#64748B',
+                      color: 'text.secondary',
                       fontSize: '0.875rem',
                     }}
                   >
@@ -639,6 +639,11 @@ export default function BenefitsTestimonialsManager() {
                     <Box sx={{ mt: 2 }}>
                       <Avatar src={testimonialImageUrl} sx={{ width: 60, height: 60 }} />
                     </Box>
+                  )}
+                  {!testimonialImageUrl && (
+                    <Typography sx={{ mt: 1, fontSize: '0.75rem', color: 'text.secondary' }}>
+                      Image not uploaded
+                    </Typography>
                   )}
                 </Box>
                 <NumericField

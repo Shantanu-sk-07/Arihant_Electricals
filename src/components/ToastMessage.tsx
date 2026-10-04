@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
+import type { ReactNode } from "react";
 import { toast, ToastContainer, type ToastOptions, type ToastContainerProps } from "react-toastify";
 import { Dialog, DialogContent, DialogActions, Button, Typography, Snackbar, Alert, CircularProgress, Box} from "@mui/material";
+import { DeleteOutlined as DeleteOutlineIcon } from "@mui/icons-material";
 import "react-toastify/dist/ReactToastify.css";
 
 export type MessageType = "success" | "error" | "warning" | "info";
@@ -12,7 +14,7 @@ export interface ConfirmationOptions {
   confirmText?: string;
   cancelText?: string;
   confirmColor?: "primary" | "secondary" | "error" | "success" | "warning";
-  icon?: string;
+  icon?: ReactNode;
   description?: string;
   onConfirm?: () => Promise<void> | void;
   onCancel?: () => void;
@@ -94,7 +96,7 @@ export const showConfirmation = (
       confirmText: "Delete",
       cancelText: "Cancel",
       confirmColor: "error",
-      icon: "🗑️",
+      icon: <DeleteOutlineIcon />,
       description: "This action cannot be undone",
       onConfirm: onConfirm,
     };
@@ -104,7 +106,7 @@ export const showConfirmation = (
       confirmText: "Delete",
       cancelText: "Cancel", 
       confirmColor: "error",
-      icon: "🗑️",
+      icon: <DeleteOutlineIcon />,
       description: "This action cannot be undone",
       ...messageOrOptions,
     };
@@ -241,7 +243,9 @@ export const showConfirmation = (
                 alignItems: "center",
                 justifyContent: "center",
               }}>
-                <Typography sx={{ fontSize: 24 }}>{icon}</Typography>
+                <Box sx={{ display: "flex", fontSize: 24, "& svg": { fontSize: "inherit" } }}>
+                  {icon}
+                </Box>
               </Box>
               <Box>
                 <Typography variant="h6" sx={{ color: "white", fontWeight: 700, letterSpacing: "-0.5px" }}>
@@ -259,7 +263,7 @@ export const showConfirmation = (
           <DialogContent sx={{ p: 3 }}>
             <Box sx={{ textAlign: "center" }}>
               <Typography variant="body1" sx={{ 
-                color: "#1e293b", 
+                color: "text.primary",
                 fontWeight: 500,
                 lineHeight: 1.5,
               }}>
@@ -272,8 +276,9 @@ export const showConfirmation = (
             p: 2.5, 
             pt: 0, 
             gap: 2,
-            bgcolor: "#f8fafc",
-            borderTop: "1px solid #e2e8f0"
+            bgcolor: "background.default",
+            borderTop: 1,
+            borderColor: "divider"
           }}>
             <Button 
               onClick={() => handleClose(false)} 
@@ -284,11 +289,11 @@ export const showConfirmation = (
                 textTransform: "none", 
                 borderRadius: 2,
                 py: 1,
-                borderColor: "#cbd5e1",
-                color: "#475569",
+                borderColor: "divider",
+                color: "text.secondary",
                 "&:hover": {
-                  borderColor: "#94a3b8",
-                  bgcolor: "#f1f5f9"
+                  borderColor: "text.secondary",
+                  bgcolor: "action.hover"
                 }
               }}
             >

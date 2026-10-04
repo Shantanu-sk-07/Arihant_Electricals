@@ -234,8 +234,8 @@ export default function Home() {
                     <Typography variant="body2" sx={{ minHeight: 50, mb: 2, color: 'text.secondary', lineHeight: 1.7 }}>{service.short_description}</Typography>
                     {service.features?.slice(0, 3).map((feature) => (
                       <Stack key={feature} direction="row" spacing={1} sx={{ mb: 0.8, alignItems: 'center' }}>
-                        <CheckCircle sx={{ fontSize: 17, color: '#66814D' }} />
-                        <Typography variant="body2" sx={{ color: '#56645A' }}>{feature}</Typography>
+                        <CheckCircle sx={{ fontSize: 17, color: 'primary.main' }} />
+                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>{feature}</Typography>
                       </Stack>
                     ))}
                   </CardContent>
@@ -244,7 +244,7 @@ export default function Home() {
             ))}
           </Grid>
           <Box sx={{ mt: 3.5, textAlign: 'center' }}>
-            <Button component={RouterLink} to="/services" endIcon={<ArrowForward />} sx={{ color: '#49643F', fontWeight: 800 }}>Explore all services</Button>
+            <Button component={RouterLink} to="/services" endIcon={<ArrowForward />} sx={{ color: 'primary.main', fontWeight: 800 }}>Explore all services</Button>
           </Box>
         </Container>
       </Box>
@@ -278,28 +278,28 @@ export default function Home() {
               {popularPlans.map((plan, index) => (
                 <Grid size={{ xs: 12, sm: 6, md: 4 }} key={plan.id}>
                   <Card component={motion.div} variants={reveal} initial="hidden" whileInView="visible" viewport={{ once: true }} transition={{ delay: index * 0.1, duration: 0.45 }} sx={{ position: 'relative', height: '100%', borderRadius: '4px', border: plan.is_popular ? '2px solid' : '1px solid', borderColor: plan.is_popular ? 'primary.main' : 'divider', boxShadow: 'none', bgcolor: 'background.paper' }}>
-                    {plan.is_popular && <Chip label="MOST CHOSEN" size="small" sx={{ position: 'absolute', top: 16, right: 16, bgcolor: '#E8EDDF', color: '#46643F', fontWeight: 800, borderRadius: '3px' }} />}
+                    {plan.is_popular && <Chip label="MOST CHOSEN" size="small" sx={{ position: 'absolute', top: 16, right: 16, bgcolor: '#E8EDDF', color: '#26382F', fontWeight: 800, borderRadius: '3px' }} />}
                     <CardContent sx={{ p: { xs: 2.5, md: 3.5 } }}>
-                      <Typography sx={{ color: '#778078', fontSize: '0.74rem', fontWeight: 800, letterSpacing: '0.12em' }}>{plan.system_type?.toUpperCase() || 'ON-GRID'}</Typography>
+                      <Typography sx={{ color: 'text.secondary', fontSize: '0.74rem', fontWeight: 800, letterSpacing: '0.12em' }}>{plan.system_type?.toUpperCase() || 'ON-GRID'}</Typography>
                       <Typography sx={{ mt: 1, fontFamily: headingFont, fontSize: '2.2rem' }}>{plan.kw} kW</Typography>
-                      <Box sx={{ my: 2.4, pb: 2.4, borderBottom: '1px solid #E6E9E2' }}>
-                        <Typography variant="body2" sx={{ color: '#98A097', textDecoration: 'line-through' }}>₹{plan.total_cost.toLocaleString('en-IN')}</Typography>
-                        <Typography sx={{ color: '#385638', fontSize: '2rem', fontWeight: 800, lineHeight: 1.2 }}>₹{plan.final_cost.toLocaleString('en-IN')}</Typography>
-                        <Typography variant="body2" sx={{ mt: 0.5, color: '#66814D', fontWeight: 700 }}>After ₹{plan.subsidy_amount.toLocaleString('en-IN')} subsidy</Typography>
+                      <Box sx={{ my: 2.4, pb: 2.4, borderBottom: '1px solid', borderColor: 'divider' }}>
+                        <Typography variant="body2" sx={{ color: 'text.secondary', textDecoration: 'line-through' }}>₹{plan.total_cost.toLocaleString('en-IN')}</Typography>
+                        <Typography sx={{ color: 'primary.dark', fontSize: '2rem', fontWeight: 800, lineHeight: 1.2 }}>₹{plan.final_cost.toLocaleString('en-IN')}</Typography>
+                        <Typography variant="body2" sx={{ mt: 0.5, color: 'primary.main', fontWeight: 700 }}>After ₹{plan.subsidy_amount.toLocaleString('en-IN')} subsidy</Typography>
                       </Box>
                       <Stack spacing={1.1} sx={{ mb: 3 }}>
                         {plan.monthly_savings && <PriceFeature>Save ₹{plan.monthly_savings.toLocaleString('en-IN')} / month</PriceFeature>}
                         {plan.panels_count && <PriceFeature>{plan.panels_count} solar panels</PriceFeature>}
                         {plan.area_required && <PriceFeature>Roof area: {plan.area_required}</PriceFeature>}
                       </Stack>
-                      <Button component={RouterLink} to="/contact" fullWidth variant={plan.is_popular ? 'contained' : 'outlined'} sx={{ py: 1.2, borderRadius: '4px', fontWeight: 800, color: plan.is_popular ? 'white' : '#49643F', borderColor: '#66814D', bgcolor: plan.is_popular ? '#49643F' : 'transparent', '&:hover': { borderColor: '#385638', bgcolor: plan.is_popular ? '#385638' : '#F0F3EB' } }}>Get a tailored quote</Button>
+                      <Button component={RouterLink} to="/contact" fullWidth variant={plan.is_popular ? 'contained' : 'outlined'} sx={{ py: 1.2, borderRadius: '4px', fontWeight: 800, color: plan.is_popular ? 'white' : 'primary.main', borderColor: 'primary.main', bgcolor: plan.is_popular ? 'primary.dark' : 'transparent', '&:hover': { borderColor: 'primary.dark', bgcolor: plan.is_popular ? 'primary.dark' : 'action.hover' } }}>Get a tailored quote</Button>
                     </CardContent>
                   </Card>
                 </Grid>
               ))}
             </Grid>
             <Box sx={{ mt: 3, textAlign: 'center' }}>
-              <Button component={RouterLink} to="/pricing" endIcon={<ArrowForward />} sx={{ color: '#49643F', fontWeight: 800 }}>See all system options</Button>
+              <Button component={RouterLink} to="/pricing" endIcon={<ArrowForward />} sx={{ color: 'primary.main', fontWeight: 800 }}>See all system options</Button>
             </Box>
           </Container>
         </Box>
@@ -327,7 +327,7 @@ export default function Home() {
                       </Stack>
                       <Typography sx={{ mb: 3, color: 'text.secondary', lineHeight: 1.8 }}>“{testimonial.message}”</Typography>
                       <Stack direction="row" spacing={1.3} sx={{ alignItems: 'center' }}>
-                        <Avatar src={testimonial.image_url || undefined} alt={testimonial.name} sx={{ bgcolor: '#49643F', width: 42, height: 42 }}>{testimonial.name.charAt(0)}</Avatar>
+                        <Avatar src={testimonial.image_url || undefined} alt={testimonial.name} sx={{ bgcolor: 'primary.main', width: 42, height: 42 }}>{testimonial.name.charAt(0)}</Avatar>
                         <Box>
                           <Typography variant="body2" sx={{ fontWeight: 800 }}>{testimonial.name}</Typography>
                           <Typography variant="caption" sx={{ color: 'text.secondary' }}>{testimonial.location}</Typography>
@@ -374,8 +374,8 @@ export default function Home() {
 function PriceFeature({ children }: { children: React.ReactNode }) {
   return (
     <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-      <CheckCircle sx={{ color: '#66814D', fontSize: 18 }} />
-      <Typography variant="body2" sx={{ color: '#56645A' }}>{children}</Typography>
+      <CheckCircle sx={{ color: 'primary.main', fontSize: 18 }} />
+      <Typography variant="body2" sx={{ color: 'text.secondary' }}>{children}</Typography>
     </Stack>
   );
 }

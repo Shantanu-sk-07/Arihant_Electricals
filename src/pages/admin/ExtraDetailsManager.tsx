@@ -3,10 +3,11 @@ import {
   Box, Typography, Button, Grid, Stack, Card, CardContent,
   CircularProgress, Tab, Tabs, Alert,
 } from '@mui/material';
-import { Save, CloudUpload } from '@mui/icons-material';
+import { ImageNotSupported, Save, CloudUpload } from '@mui/icons-material';
 import {
   FormProvider, useForm, useWatch, type UseFormReturn,
 } from 'react-hook-form';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useContent } from '@/hooks/useContent';
 import { supabase } from '@/lib/supabase';
 import { BRAND } from '@/constants/Brand';
@@ -251,7 +252,7 @@ function ImageRow({ methods, name, label, uploadingKey, onUpload }: ImageRowProp
             }}
           />
         </Button>
-        {value && (
+        {value ? (
           <Box
             component="img"
             src={value}
@@ -264,6 +265,27 @@ function ImageRow({ methods, name, label, uploadingKey, onUpload }: ImageRowProp
               border: `1px solid ${BRAND.light}`,
             }}
           />
+        ) : (
+          <Box
+            sx={{
+              width: 120,
+              height: 60,
+              display: 'grid',
+              placeItems: 'center',
+              border: 1,
+              borderColor: 'divider',
+              borderRadius: 1,
+              bgcolor: 'action.hover',
+              color: 'text.secondary',
+            }}
+            role="img"
+            aria-label="No image saved"
+          >
+            <ImageNotSupported fontSize="small" />
+            <Typography variant="caption" sx={{ mt: 0.5 }}>
+              Image not uploaded
+            </Typography>
+          </Box>
         )}
       </Stack>
     </Stack>
@@ -273,7 +295,11 @@ function ImageRow({ methods, name, label, uploadingKey, onUpload }: ImageRowProp
 /* ---------------- MAIN ---------------- */
 
 export default function ExtraDetailsManager() {
-  const [page, setPage] = useState<PageId>('home');
+  const location = useLocation();
+  const navigate = useNavigate();
+  const requestedPage = (location.state as { adminSearchPage?: PageId } | null)?.adminSearchPage;
+  const [manualPage, setManualPage] = useState<PageId>('home');
+  const page = requestedPage && requestedPage in PAGE_KEYS ? requestedPage : manualPage;
   const { content, loading, error, updateContents } = useContent(page);
   const [saving, setSaving] = useState(false);
   const [uploadingKey, setUploadingKey] = useState<string | null>(null);
@@ -344,10 +370,10 @@ export default function ExtraDetailsManager() {
   return (
     <Box>
       <Box sx={{ mb: 3 }}>
-        <Typography sx={{ fontWeight: 700, color: BRAND.dark, fontSize: '1.5rem' }}>
+        <Typography sx={{ fontWeight: 700, color: 'text.primary', fontSize: '1.5rem' }}>
           Extra Details
         </Typography>
-        <Typography sx={{ color: '#64748B', mt: 0.5, fontSize: '0.875rem' }}>
+        <Typography sx={{ color: 'text.secondary', mt: 0.5, fontSize: '0.875rem' }}>
           Home, About and Contact page copy. Rarely changes but fully editable.
         </Typography>
       </Box>
@@ -356,7 +382,12 @@ export default function ExtraDetailsManager() {
         <CardContent>
           <Tabs
             value={page}
-            onChange={(_, v) => setPage(v as PageId)}
+            onChange={(_, v) => {
+              setManualPage(v as PageId);
+              if (requestedPage) {
+                navigate(location.pathname, { replace: true, state: null });
+              }
+            }}
             variant="scrollable"
             allowScrollButtonsMobile
             sx={{
@@ -393,7 +424,7 @@ export default function ExtraDetailsManager() {
               <Stack spacing={3}>
                 <Card sx={{ borderRadius: 2 }}>
                   <CardContent>
-                    <Typography sx={{ fontWeight: 700, mb: 2, color: BRAND.dark }}>
+                    <Typography sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>
                       Hero Section
                     </Typography>
                     <Grid container spacing={2}>
@@ -424,7 +455,7 @@ export default function ExtraDetailsManager() {
 
                 <Card sx={{ borderRadius: 2 }}>
                   <CardContent>
-                    <Typography sx={{ fontWeight: 700, mb: 2, color: BRAND.dark }}>
+                    <Typography sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>
                       Stats Labels
                     </Typography>
                     <Grid container spacing={2}>
@@ -446,7 +477,7 @@ export default function ExtraDetailsManager() {
 
                 <Card sx={{ borderRadius: 2 }}>
                   <CardContent>
-                    <Typography sx={{ fontWeight: 700, mb: 2, color: BRAND.dark }}>
+                    <Typography sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>
                       Intro Section
                     </Typography>
                     <Grid container spacing={2}>
@@ -474,7 +505,7 @@ export default function ExtraDetailsManager() {
 
                 <Card sx={{ borderRadius: 2 }}>
                   <CardContent>
-                    <Typography sx={{ fontWeight: 700, mb: 2, color: BRAND.dark }}>
+                    <Typography sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>
                       Services Section Heading
                     </Typography>
                     <Grid container spacing={2}>
@@ -493,7 +524,7 @@ export default function ExtraDetailsManager() {
 
                 <Card sx={{ borderRadius: 2 }}>
                   <CardContent>
-                    <Typography sx={{ fontWeight: 700, mb: 2, color: BRAND.dark }}>
+                    <Typography sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>
                       Steps Section
                     </Typography>
                     <Grid container spacing={2}>
@@ -552,7 +583,7 @@ export default function ExtraDetailsManager() {
 
                 <Card sx={{ borderRadius: 2 }}>
                   <CardContent>
-                    <Typography sx={{ fontWeight: 700, mb: 2, color: BRAND.dark }}>
+                    <Typography sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>
                       Pricing Section Heading
                     </Typography>
                     <Grid container spacing={2}>
@@ -571,7 +602,7 @@ export default function ExtraDetailsManager() {
 
                 <Card sx={{ borderRadius: 2 }}>
                   <CardContent>
-                    <Typography sx={{ fontWeight: 700, mb: 2, color: BRAND.dark }}>
+                    <Typography sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>
                       Testimonials Section Heading
                     </Typography>
                     <Grid container spacing={2}>
@@ -590,7 +621,7 @@ export default function ExtraDetailsManager() {
 
                 <Card sx={{ borderRadius: 2 }}>
                   <CardContent>
-                    <Typography sx={{ fontWeight: 700, mb: 2, color: BRAND.dark }}>
+                    <Typography sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>
                       Bottom CTA Section
                     </Typography>
                     <Grid container spacing={2}>
@@ -616,7 +647,7 @@ export default function ExtraDetailsManager() {
               <Stack spacing={3}>
                 <Card sx={{ borderRadius: 2 }}>
                   <CardContent>
-                    <Typography sx={{ fontWeight: 700, mb: 2, color: BRAND.dark }}>
+                    <Typography sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>
                       Hero Banner
                     </Typography>
                     <Grid container spacing={2}>
@@ -635,7 +666,7 @@ export default function ExtraDetailsManager() {
 
                 <Card sx={{ borderRadius: 2 }}>
                   <CardContent>
-                    <Typography sx={{ fontWeight: 700, mb: 2, color: BRAND.dark }}>
+                    <Typography sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>
                       Story Section
                     </Typography>
                     <Grid container spacing={2}>
@@ -660,7 +691,7 @@ export default function ExtraDetailsManager() {
 
                 <Card sx={{ borderRadius: 2 }}>
                   <CardContent>
-                    <Typography sx={{ fontWeight: 700, mb: 2, color: BRAND.dark }}>
+                    <Typography sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>
                       Purpose / Mission / Vision
                     </Typography>
                     <Grid container spacing={2}>
@@ -691,7 +722,7 @@ export default function ExtraDetailsManager() {
 
                 <Card sx={{ borderRadius: 2 }}>
                   <CardContent>
-                    <Typography sx={{ fontWeight: 700, mb: 2, color: BRAND.dark }}>
+                    <Typography sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>
                       Why Choose Us
                     </Typography>
                     <Grid container spacing={2}>
@@ -707,7 +738,7 @@ export default function ExtraDetailsManager() {
 
                 <Card sx={{ borderRadius: 2 }}>
                   <CardContent>
-                    <Typography sx={{ fontWeight: 700, mb: 2, color: BRAND.dark }}>
+                    <Typography sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>
                       Team Section Heading
                     </Typography>
                     <Grid container spacing={2}>
@@ -726,7 +757,7 @@ export default function ExtraDetailsManager() {
 
                 <Card sx={{ borderRadius: 2 }}>
                   <CardContent>
-                    <Typography sx={{ fontWeight: 700, mb: 2, color: BRAND.dark }}>
+                    <Typography sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>
                       Certifications Section
                     </Typography>
                     <Grid container spacing={2}>
@@ -746,7 +777,7 @@ export default function ExtraDetailsManager() {
               <Stack spacing={3}>
                 <Card sx={{ borderRadius: 2 }}>
                   <CardContent>
-                    <Typography sx={{ fontWeight: 700, mb: 2, color: BRAND.dark }}>
+                    <Typography sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>
                       Hero Banner
                     </Typography>
                     <Grid container spacing={2}>
@@ -765,7 +796,7 @@ export default function ExtraDetailsManager() {
 
                 <Card sx={{ borderRadius: 2 }}>
                   <CardContent>
-                    <Typography sx={{ fontWeight: 700, mb: 2, color: BRAND.dark }}>
+                    <Typography sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>
                       Form Section
                     </Typography>
                     <Grid container spacing={2}>
