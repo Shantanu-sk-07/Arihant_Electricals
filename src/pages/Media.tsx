@@ -1,5 +1,5 @@
 import {
-  Box, Container, Grid, Typography, Card, CardMedia, CardContent,
+  Box, Container, Grid, Typography, Card, CardMedia, 
   Stack, Tabs, Tab, CircularProgress, Button,
   Tooltip, FormControl, Select, MenuItem, InputLabel,
   useMediaQuery, useTheme,
@@ -25,8 +25,8 @@ import { BRAND, SHADOW } from '@/constants/Brand';
 import { useContent } from '@/hooks/useContent';
 
 /* ---------- SIZES ---------- */
-const MEDIA_HEIGHT_COMPACT = 220;   // desktop base height (All view)
-const MEDIA_HEIGHT_TALL = 480;      // desktop base height (specific filter / reel view)
+const MEDIA_HEIGHT_COMPACT = 220;
+const MEDIA_HEIGHT_TALL = 480;
 const FILTER_ICON_SIZE = 16;
 
 /* ============================================================
@@ -55,7 +55,7 @@ function detectPlatform(url: string): Platform {
   return 'unknown';
 }
 
-/* ---------- PLATFORM LABEL + COLOR (for the "Watch on ..." button) ---------- */
+/* ---------- PLATFORM LABEL + COLOR ---------- */
 function getPlatformMeta(platform: Platform) {
   switch (platform) {
     case 'youtube':
@@ -77,7 +77,7 @@ function getPlatformMeta(platform: Platform) {
   }
 }
 
-/* --- YouTube: hide chrome via URL params --- */
+/* --- YouTube --- */
 function toYouTubeEmbed(url: string): string {
   if (!url) return url;
   const trimmed = url.trim();
@@ -111,7 +111,7 @@ function toYouTubeEmbed(url: string): string {
   return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
 }
 
-/* --- Vimeo: hide chrome --- */
+/* --- Vimeo --- */
 function toVimeoEmbed(url: string): string {
   if (!url) return url;
   let videoId: string | null = null;
@@ -134,14 +134,14 @@ function toVimeoEmbed(url: string): string {
   return `https://player.vimeo.com/video/${videoId}?${params.toString()}`;
 }
 
-/* --- Instagram: CLEAN EMBED IFRAME --- */
+/* --- Instagram --- */
 function toInstagramEmbed(url: string): string | null {
   const m = url.match(/instagram\.com\/(?:p|reel|reels|tv)\/([A-Za-z0-9_-]+)/);
   if (!m) return null;
   return `https://www.instagram.com/p/${m[1]}/embed/`;
 }
 
-/* --- TikTok: CLEAN EMBED IFRAME --- */
+/* --- TikTok --- */
 function toTikTokEmbed(url: string): string | null {
   const m = url.match(/tiktok\.com\/.*\/video\/(\d+)/);
   if (!m) return null;
@@ -631,22 +631,22 @@ export default function MediaPage() {
   /* ---------- LAYOUT MODE ---------- */
   const isTallMode = typeFilter === 'video' && platformFilter !== 'all';
 
-  // Responsive preview height:
-  //   mobile  → ~1 full card + ~20% of next
-  //   desktop → compact = 220 / tall = 480
+  // Responsive preview height.
+  // Mobile: preview shrinks to leave room for title + description + button
+  //   so that ~1 full card fits on screen at a time.
+  // Desktop: unchanged.
   const mediaHeightSx = isTallMode
     ? {
-        xs: 340,                    // mobile: 1 full reel + ~20% of next
-        sm: 360,
+        xs: 260,                    // mobile: fits 1 full card (title+desc+preview+btn)
+        sm: 300,
         md: MEDIA_HEIGHT_TALL,      // desktop: 480
       }
     : {
-        xs: 230,                    // mobile: 1 full card + ~20% of next
-        sm: 240,
+        xs: 180,                    // mobile: fits 1 full card
+        sm: 200,
         md: MEDIA_HEIGHT_COMPACT,   // desktop: 220
       };
 
-  // Wider cards on desktop (fewer per row)
   const gridSize = isTallMode
     ? { xs: 12, sm: 6, md: 6, lg: 4 }
     : { xs: 12, sm: 6, md: 6, lg: 4 };
@@ -795,7 +795,49 @@ export default function MediaPage() {
                         },
                       }}
                     >
-                      {/* PREVIEW BOX — only the video/image, nothing else */}
+                      {/* ============ TITLE + DESCRIPTION (ABOVE PREVIEW) ============ */}
+                      <Box
+                        sx={{
+                          px: { xs: 1.25, md: 1.5 },
+                          pt: { xs: 1.25, md: 1.5 },
+                          pb: 0.75,
+                        }}
+                      >
+                        <Typography
+                          variant="subtitle1"
+                          sx={{
+                            fontWeight: 700,
+                            fontSize: { xs: '0.9rem', md: '1rem' },
+                            lineHeight: 1.3,
+                            color: 'text.primary',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                            mb: m.description ? 0.5 : 0,
+                          }}
+                        >
+                          {m.title}
+                        </Typography>
+                        {m.description && (
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              fontSize: { xs: '0.72rem', md: '0.78rem' },
+                              color: 'text.secondary',
+                              lineHeight: 1.4,
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                            }}
+                          >
+                            {m.description}
+                          </Typography>
+                        )}
+                      </Box>
+
+                      {/* ============ PREVIEW BOX (CONTENT ONLY) ============ */}
                       <Box
                         sx={{
                           height: mediaHeightSx,
@@ -842,7 +884,7 @@ export default function MediaPage() {
                           />
                         )}
 
-                        {/* INSTAGRAM / TIKTOK — clean, video only */}
+                        {/* INSTAGRAM / TIKTOK */}
                         {isSocial && (
                           <CleanSocialEmbed
                             url={m.url}
@@ -851,21 +893,18 @@ export default function MediaPage() {
                           />
                         )}
 
-                        {/* TWITTER / X / FACEBOOK / UNKNOWN — fallback preview */}
+                        {/* TWITTER / X / FACEBOOK / UNKNOWN */}
                         {(isTwitter || isFacebook || isUnknown) && (
                           <FallbackPreview url={m.url} />
                         )}
                       </Box>
 
-                      {/* "WATCH ON ..." BUTTON — only for videos */}
+                      {/* ============ WATCH ON ... BUTTON (BELOW PREVIEW) ============ */}
                       {m.type === 'video' && (
-                        <CardContent
+                        <Box
                           sx={{
-                            p: { xs: '8px !important', md: '10px !important' },
-                            pt: { xs: '8px !important', md: '10px !important' },
-                            '&:last-child': {
-                              pb: { xs: '8px !important', md: '10px !important' },
-                            },
+                            px: { xs: 1.25, md: 1.5 },
+                            py: { xs: 1, md: 1.25 },
                           }}
                         >
                           <Button
@@ -880,7 +919,7 @@ export default function MediaPage() {
                               textTransform: 'none',
                               fontWeight: 700,
                               fontSize: { xs: '0.75rem', md: '0.8rem' },
-                              py: { xs: 0.55, md: 0.7 },
+                              py: { xs: 0.6, md: 0.7 },
                               borderRadius: 1.5,
                               bgcolor: meta.color,
                               color: '#fff',
@@ -901,7 +940,7 @@ export default function MediaPage() {
                           >
                             Watch on {meta.label}
                           </Button>
-                        </CardContent>
+                        </Box>
                       )}
                     </Card>
                   </Grid>

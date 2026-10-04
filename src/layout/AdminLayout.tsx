@@ -69,13 +69,15 @@ export default function AdminLayout() {
 
   const drawerContent = (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <Toolbar
-        sx={{
-          background: `linear-gradient(135deg, ${BRAND.dark} 0%, ${BRAND.primaryDark} 100%)`,
-          color: 'white',
-          minHeight: 72,
-        }}
-      >
+     <Toolbar
+  sx={{
+    bgcolor: 'background.paper',
+    color: 'text.primary',
+    borderBottom: 1,
+    borderColor: 'divider',
+    minHeight: 72,
+  }}
+>
         <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', width: '100%' }}>
           {logoUrl ? (
             <Avatar
@@ -208,55 +210,62 @@ export default function AdminLayout() {
           }}
         >
           <Toolbar sx={{ gap: { xs: 0.5, sm: 1.5 }, px: { xs: 1, sm: 2, md: 3 } }}>
+            {/* Mobile only: hamburger + logo/name (sidebar is hidden, so show here) */}
             {isMobile && (
-            <IconButton
-              onClick={() => setMobileOpen(true)}
-              aria-label="Open admin menu"
-              sx={{ color: 'text.primary' }}
-            >
-              <MenuIcon />
-            </IconButton>
+              <>
+                <IconButton
+                  onClick={() => setMobileOpen(true)}
+                  aria-label="Open admin menu"
+                  sx={{ color: 'text.primary' }}
+                >
+                  <MenuIcon />
+                </IconButton>
+                <Stack
+                  direction="row"
+                  spacing={{ xs: 0.75, sm: 1 }}
+                  sx={{ alignItems: 'center', minWidth: 0, flexShrink: 0 }}
+                >
+                  <Avatar
+                    src={logoUrl || undefined}
+                    alt={siteName}
+                    sx={{
+                      width: 30,
+                      height: 30,
+                      bgcolor: BRAND.primary,
+                      color: 'white',
+                      fontWeight: 700,
+                    }}
+                  >
+                    {siteName.charAt(0).toUpperCase()}
+                  </Avatar>
+                  <Typography
+                    sx={{
+                      fontWeight: 700,
+                      maxWidth: 120,
+                      fontSize: '0.8rem',
+                    }}
+                    noWrap
+                  >
+                    {siteName}
+                  </Typography>
+                </Stack>
+              </>
             )}
-            <Stack
-              direction="row"
-              spacing={{ xs: 0.75, sm: 1 }}
-              sx={{ alignItems: 'center', minWidth: 0, flexShrink: 0 }}
-            >
-              <Avatar
-                src={logoUrl || undefined}
-                alt={siteName}
-                sx={{
-                  width: { xs: 30, sm: 36 },
-                  height: { xs: 30, sm: 36 },
-                  bgcolor: BRAND.primary,
-                  color: 'white',
-                  fontWeight: 700,
-                }}
-              >
-                {siteName.charAt(0).toUpperCase()}
-              </Avatar>
-              <Typography
-                sx={{
-                  fontWeight: 700,
-                  maxWidth: { xs: 82, sm: 180, md: 200 },
-                  fontSize: { xs: '0.78rem', sm: '0.9rem' },
-                }}
-                noWrap
-              >
-                {siteName}
-              </Typography>
-            </Stack>
+
+            {/* Search — centered on desktop, flexible on mobile */}
             <Box
               sx={{
                 flex: 1,
                 minWidth: 0,
                 display: 'flex',
-                justifyContent: 'center',
+                justifyContent: isMobile ? 'flex-end' : 'center',
                 px: { xs: 0.5, sm: 2 },
               }}
             >
               <AdminContentSearch />
             </Box>
+
+            {/* Right side: theme toggle + account avatar */}
             <Box
               sx={{
                 display: 'flex',
