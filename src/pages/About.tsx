@@ -25,13 +25,13 @@ export default function About() {
 
   return (
     <Box>
-      <Box sx={{ background: `linear-gradient(135deg, rgba(32,49,40,.94), rgba(85,122,70,.8)), url("${content['hero.image'] || 'https://images.unsplash.com/photo-1497440001374-f26997328c1b?auto=format&fit=crop&w=2000&q=85'}") center/cover`, color: 'white', py: { xs: 8, md: 12 }, textAlign: 'center' }}>
+      <Box sx={{ background: `linear-gradient(135deg, rgba(9,39,71,.92), rgba(23,101,179,.72)), url("${content['hero.image'] || 'https://images.pexels.com/photos/356036/pexels-photo-356036.jpeg?auto=compress&cs=tinysrgb&w=2000'}") center/cover`, color: 'white', py: { xs: 8, md: 12 }, textAlign: 'center' }}>
         <Container>
           <Typography variant="h2" sx={{ fontWeight: 800, fontSize: { xs: '2rem', md: '3rem' }, mb: 2, letterSpacing: '-0.02em' }}>
-            {content['hero.title'] || content['intro.title'] || 'About Arihant Electricals'}
+            {content['hero.title'] || content['intro.title'] || 'Solar energy, made personal.'}
           </Typography>
           <Typography variant="h6" sx={{ fontWeight: 400, opacity: 0.9, maxWidth: 720, mx: 'auto' }}>
-            {content['hero.subtitle'] || 'Powering Maharashtra with clean, affordable solar energy since 2015.'}
+            {content['hero.subtitle'] || 'A local solar team helping homes and businesses make a confident switch to cleaner energy.'}
           </Typography>
         </Container>
       </Box>
@@ -43,21 +43,19 @@ export default function About() {
             <Box component={motion.div} initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
               <Chip label={content['story.eyebrow'] || 'Our Story'} sx={{ bgcolor: `${BRAND.primary}15`, color: BRAND.primary, fontWeight: 700, mb: 2 }} />
               <Typography variant="h3" sx={{ fontWeight: 800, fontSize: { xs: '1.75rem', md: '2.25rem' }, color: 'text.primary', mb: 3, lineHeight: 1.2 }}>
-                {content['story.title'] || 'A Decade of Solar Excellence in Maharashtra'}
+                {content['story.title'] || 'A dependable team for your move to solar.'}
               </Typography>
               <Typography variant="body1" sx={{ color: 'text.secondary', lineHeight: 1.8, mb: 2, whiteSpace: 'pre-line' }}>
                 {content['intro.body'] ||
-                  'Arihant Electricals has been serving Maharashtra with end-to-end solar solutions — from site survey to subsidy disbursement. We\'ve helped 500+ families and businesses switch to clean solar energy and cut their electricity bills by up to 90%.'}
+                  'Arihant Electricals helps homes and businesses explore rooftop solar with practical advice, thoughtful system design, and hands-on installation support. We make the process easier to understand, from the first roof assessment to getting your system up and running.'}
               </Typography>
               <Typography variant="body1" sx={{ color: 'text.secondary', lineHeight: 1.8 }}>
-                {content['story.supporting_body'] || "Our in-house documentation team makes the PM Surya Ghar subsidy process completely hassle-free — you don't need to visit any government office."}
+                {content['story.supporting_body'] || 'Our team can also guide you through the documentation and coordination involved, so you have a clear point of contact throughout your solar journey.'}
               </Typography>
             </Box>
           </Grid>
           <Grid size={{ xs: 12, md: 6 }}>
-            {content['story.image'] && (
-              <Box component="img" src={content['story.image']} alt="Arihant solar installation" sx={{ width: '100%', height: { xs: 240, md: 300 }, objectFit: 'cover', borderRadius: 3, mb: 2 }} />
-            )}
+            <Box component="img" src={content['story.image'] || 'https://images.pexels.com/photos/9875448/pexels-photo-9875448.jpeg?auto=compress&cs=tinysrgb&w=1300'} alt="Solar panels installed on a rooftop under the open sky" sx={{ width: '100%', height: { xs: 240, md: 300 }, objectFit: 'cover', borderRadius: 3, mb: 2 }} />
             <Grid container spacing={2}>
               {[
                 { value: settings.stat_installations || '500+', label: 'Installations' },
@@ -89,7 +87,7 @@ export default function About() {
       {/* MISSION / VISION */}
       <Box sx={{ py: { xs: 8, md: 10 }, bgcolor: 'action.hover' }}>
         <Container>
-          <SectionTitle eyebrow={content['purpose.eyebrow'] || 'Our Purpose'} title={content['purpose.title'] || 'Mission & Vision'} subtitle={content['purpose.subtitle'] || 'Why we do what we do'} />
+          <SectionTitle eyebrow={content['purpose.eyebrow'] || 'WHAT GUIDES US'} title={content['purpose.title'] || 'Good solar starts with good people.'} subtitle={content['purpose.subtitle'] || 'We believe clean energy should be simple to understand and dependable for the long run.'} />
           <Grid container spacing={3}>
             <Grid size={{ xs: 12, md: 4 }}>
               <Card component={motion.div} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} sx={{ height: '100%', p: 2, border: `1px solid ${BRAND.light}` }}>
@@ -99,7 +97,7 @@ export default function About() {
                   </Box>
                   <Typography variant="h5" sx={{ fontWeight: 700, color: 'text.primary', mb: 1.5 }}>{content['mission.title'] || 'Our Mission'}</Typography>
                   <Typography variant="body1" sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
-                    {content['mission.body'] || 'Make solar energy affordable and accessible to every home and business in Maharashtra.'}
+                    {content['mission.body'] || 'Help more households and businesses adopt rooftop solar with clear advice, dependable installation, and responsive support.'}
                   </Typography>
                 </CardContent>
               </Card>
@@ -112,7 +110,7 @@ export default function About() {
                   </Box>
                   <Typography variant="h5" sx={{ fontWeight: 700, color: 'text.primary', mb: 1.5 }}>{content['vision.title'] || 'Our Vision'}</Typography>
                   <Typography variant="body1" sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
-                    {content['vision.body'] || 'Power 10,000+ rooftops with clean solar energy by 2030 and become Maharashtra\'s most trusted solar partner.'}
+                    {content['vision.body'] || 'Build a future where clean rooftop energy is an easy, trusted choice for communities across Maharashtra.'}
                   </Typography>
                 </CardContent>
               </Card>
@@ -125,7 +123,7 @@ export default function About() {
                   </Box>
                   <Typography variant="h5" sx={{ fontWeight: 700, color: 'text.primary', mb: 1.5 }}>{content['why.title'] || 'Why Choose Us'}</Typography>
                   <Stack spacing={1}>
-                    {(content['why.items'] || 'End-to-end service\nIn-house documentation\nGenuine products\n5-year workmanship warranty').split('\n').filter(Boolean).map((f) => (
+                    {(content['why.items'] || 'Guidance from assessment to installation\nTransparent system recommendations\nQuality solar equipment\nSupport after your system is switched on').split('\n').filter(Boolean).map((f) => (
                       <Stack key={f} direction="row" spacing={1} sx={{ alignItems: 'center' }}>
                         <CheckCircle sx={{ fontSize: 18, color: BRAND.success }} />
                         <Typography variant="body2" sx={{ color: 'text.secondary' }}>{f}</Typography>
@@ -141,7 +139,7 @@ export default function About() {
 
       {/* TEAM */}
       <Container sx={{ py: { xs: 8, md: 10 } }}>
-        <SectionTitle eyebrow={content['team.eyebrow'] || 'Meet Our Team'} title={content['team.title'] || 'The People Behind Arihant'} subtitle={content['team.subtitle'] || 'Experienced professionals committed to your solar journey'} />
+        <SectionTitle eyebrow={content['team.eyebrow'] || 'MEET YOUR SOLAR TEAM'} title={content['team.title'] || 'The people behind your project.'} subtitle={content['team.subtitle'] || 'Real people, ready to help you make a confident switch to rooftop solar.'} />
         <Grid container spacing={4} sx={{ justifyContent: 'center' }}>
           {team.map((t, i) => (
             <Grid size={{ xs: 12, sm: 6, md: 4 }} key={t.name}>
@@ -163,12 +161,11 @@ export default function About() {
         <Container>
           <SectionTitle eyebrow={content['certifications.eyebrow'] || 'Certifications'} title={content['certifications.title'] || 'Trusted & Certified'} />
           <Grid container spacing={2} sx={{ justifyContent: 'center' }}>
-            {[
-              { icon: <EmojiEvents />, label: 'MNRE Registered' },
-              { icon: <CheckCircle />, label: 'GST Verified' },
-              { icon: <Groups />, label: 'BIS Certified Products' },
-              { icon: <EmojiEvents />, label: 'Top Brand Dealer' },
-            ].map((c, i) => (
+            {(content['certifications.items'] || 'MNRE Registered\nGST Verified\nBIS Certified Products\nTop Brand Dealer')
+              .split('\n')
+              .filter(Boolean)
+              .map((label, i) => ({ icon: [<EmojiEvents />, <CheckCircle />, <Groups />][i % 3], label }))
+              .map((c, i) => (
               <Grid size={{ xs: 6, md: 3 }} key={c.label}>
                 <Card
                   component={motion.div}

@@ -8,10 +8,10 @@ export function createSolarTheme(mode: PaletteMode) {
     palette: {
       mode,
       primary: {
-        main: dark ? '#A8C987' : BRAND.primary,
-        light: dark ? '#C2D9AA' : BRAND.primaryLight,
-        dark: dark ? '#77985B' : BRAND.primaryDark,
-        contrastText: dark ? '#172319' : '#FFFFFF',
+        main: dark ? '#83C6F1' : BRAND.primary,
+        light: dark ? '#B7DFF8' : BRAND.primaryLight,
+        dark: dark ? '#4A91D2' : BRAND.primaryDark,
+        contrastText: dark ? '#10263B' : '#FFFFFF',
       },
       secondary: {
         main: BRAND.secondary,
@@ -21,14 +21,14 @@ export function createSolarTheme(mode: PaletteMode) {
       warning: { main: BRAND.accent },
       error: { main: BRAND.error },
       background: {
-        default: dark ? '#131B17' : '#F8F8F2',
-        paper: dark ? '#1D2821' : '#FFFFFF',
+        default: dark ? '#101D2A' : '#F7FAFD',
+        paper: dark ? '#192A3A' : '#FFFFFF',
       },
       text: {
-        primary: dark ? '#F0F2E9' : BRAND.dark,
-        secondary: dark ? '#B5C0B7' : '#68756B',
+        primary: dark ? '#F0F6FB' : BRAND.dark,
+        secondary: dark ? '#B4C4D3' : '#63778A',
       },
-      divider: dark ? 'rgba(230,238,228,0.12)' : 'rgba(32,49,40,0.12)',
+      divider: dark ? 'rgba(230,240,249,0.12)' : 'rgba(18,49,79,0.12)',
     },
     shape: { borderRadius: 16 },
     typography: {
@@ -43,11 +43,11 @@ export function createSolarTheme(mode: PaletteMode) {
         styleOverrides: {
           body: {
             minWidth: 320,
-            backgroundColor: dark ? '#131B17' : '#F8F8F2',
+            backgroundColor: dark ? '#101D2A' : '#F7FAFD',
             transition: 'background-color 180ms ease, color 180ms ease',
           },
           '::selection': {
-            backgroundColor: dark ? 'rgba(168,201,135,.35)' : 'rgba(85,122,70,.2)',
+            backgroundColor: dark ? 'rgba(131,198,241,.35)' : 'rgba(23,101,179,.18)',
           },
           '@media (prefers-reduced-motion: reduce)': {
             '*, *::before, *::after': {
@@ -62,14 +62,14 @@ export function createSolarTheme(mode: PaletteMode) {
       MuiButton: {
         styleOverrides: {
           root: {
-            borderRadius: 12,
+            borderRadius: 10,
             transition: 'transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease',
             '&:hover': { transform: 'translateY(-1px)' },
             '&:active': { transform: 'scale(0.98)' },
             '&.MuiButton-containedPrimary': {
               boxShadow: dark
               ? '0 8px 24px rgba(0,0,0,.24)'
-              : '0 8px 24px rgba(85,122,70,.2)',
+              : '0 8px 24px rgba(23,101,179,.2)',
             },
           },
         },
@@ -77,17 +77,17 @@ export function createSolarTheme(mode: PaletteMode) {
       MuiCard: {
         styleOverrides: {
           root: {
-            borderRadius: 20,
+            borderRadius: 16,
             backgroundImage: 'none',
+            border: `1px solid ${dark ? 'rgba(230,240,249,0.10)' : 'rgba(18,49,79,0.08)'}`,
             boxShadow: dark
-              ? '0 12px 32px rgba(0,0,0,.2)'
-              : '0 12px 32px rgba(32,49,40,.07)',
-            transition: 'transform 220ms ease, box-shadow 220ms ease, background-color 180ms ease',
+              ? '0 6px 20px rgba(0,0,0,.18)'
+              : '0 6px 20px rgba(18,49,79,.06)',
+            transition: 'box-shadow 220ms ease, background-color 180ms ease',
             '&:hover': {
-              transform: 'translateY(-3px) scale(1.005)',
               boxShadow: dark
-                ? '0 18px 40px rgba(0,0,0,.32)'
-                : '0 18px 40px rgba(32,49,40,.12)',
+                ? '0 12px 30px rgba(0,0,0,.3)'
+                : '0 12px 30px rgba(18,49,79,.12)',
             },
           },
         },

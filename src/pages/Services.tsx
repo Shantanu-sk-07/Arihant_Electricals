@@ -17,7 +17,7 @@ export default function Services() {
     <Box>
       <Box
         sx={{
-          background: `linear-gradient(135deg, rgba(32,49,40,.94), rgba(85,122,70,.8)), url("${content['hero.image'] || 'https://images.unsplash.com/photo-1497440001374-f26997328c1b?auto=format&fit=crop&w=2000&q=85'}") center/cover`,
+          background: `linear-gradient(135deg, rgba(9,39,71,.92), rgba(23,101,179,.72)), url("${content['hero.image'] || 'https://images.pexels.com/photos/356036/pexels-photo-356036.jpeg?auto=compress&cs=tinysrgb&w=2000'}") center/cover`,
           color: 'white',
           py: { xs: 8, md: 12 },
           textAlign: 'center',
@@ -33,10 +33,10 @@ export default function Services() {
               letterSpacing: '-0.02em',
             }}
           >
-            {content['hero.title'] || 'Our Solar Services'}
+            {content['hero.title'] || 'Solar support, start to finish.'}
           </Typography>
           <Typography variant="h6" sx={{ fontWeight: 400, opacity: 0.9, maxWidth: 720, mx: 'auto' }}>
-            {content['hero.subtitle'] || 'Complete solar solutions for Maharashtra — from installation to subsidy paperwork.'}
+            {content['hero.subtitle'] || 'Explore the services that make planning, installing, and managing your rooftop solar system easier.'}
           </Typography>
         </Container>
       </Box>
@@ -113,7 +113,7 @@ export default function Services() {
                           <Grid container spacing={1.5}>
                             {s.features.map((f) => (
                               <Grid size={{ xs: 12, sm: 6 }} key={f}>
-                                <Stack direction="row" sx={{spacing:1, alignItems:"flex-start"}}>
+                                <Stack direction="row" spacing={1} sx={{ alignItems: 'flex-start' }}>
                                   <CheckCircle
                                     sx={{ fontSize: 20, color: BRAND.success, mt: '2px', flexShrink: 0 }}
                                   />
@@ -178,10 +178,10 @@ export default function Services() {
         <Container>
           <Card sx={{ p: { xs: 3, md: 5 }, textAlign: 'center', bgcolor: 'primary.dark', color: 'primary.contrastText' }}>
             <Typography variant="h4" sx={{ fontWeight: 800, mb: 2 }}>
-              {content['cta.title'] || 'Not sure which service you need?'}
+              {content['cta.title'] || 'Let’s find the right solar solution for you.'}
             </Typography>
             <Typography variant="body1" sx={{ opacity: 0.9, mb: 3 }}>
-              {content['cta.subtitle'] || "Talk to our experts — we'll guide you to the right solar solution."}
+              {content['cta.subtitle'] || 'Tell us a little about your home or business and our team will help you decide what to do next.'}
             </Typography>
             <Chip
               component="a"

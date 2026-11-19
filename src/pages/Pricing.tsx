@@ -10,20 +10,23 @@ import { usePricing } from '@/hooks/usePricing';
 import SectionTitle from '@/components/SectionTitle';
 import { BRAND, SHADOW } from '@/constants/Brand';
 import { useContent } from '@/hooks/useContent';
+import { useSettings } from '@/hooks/useSettings';
 
 export default function Pricing() {
   const { plans, loading } = usePricing();
   const { content } = useContent('pricing');
+  const { settings } = useSettings();
+  const calcUnitRate = parseFloat(settings.calc_unit_rate) || 8;
+  const calcUnitsPerKwDay = parseFloat(settings.calc_units_per_kw_day) || 4;
   const [monthlyBill, setMonthlyBill] = useState<string>('3000');
 
   const billNum = parseFloat(monthlyBill) || 0;
 
   const recommendation = useMemo(() => {
     if (!plans.length || !billNum) return null;
-    const unitRate = 8;
-    const monthlyUnits = billNum / unitRate;
+    const monthlyUnits = billNum / calcUnitRate;
     const dailyUnits = monthlyUnits / 30;
-    const requiredKW = Math.max(1, Math.ceil(dailyUnits / 4));
+    const requiredKW = Math.max(1, Math.ceil(dailyUnits / calcUnitsPerKwDay));
 
     const sorted = [...plans].filter((p) => p.is_active).sort((a, b) => a.kw - b.kw);
     const match = sorted.find((p) => p.kw >= requiredKW) || sorted[sorted.length - 1];
@@ -36,20 +39,20 @@ export default function Pricing() {
           ? (match.final_cost / (match.monthly_savings * 12)).toFixed(1)
           : null,
     };
-  }, [plans, billNum]);
+  }, [plans, billNum, calcUnitRate, calcUnitsPerKwDay]);
 
   const activePlans = plans.filter((p) => p.is_active);
 
   return (
     <Box>
       {/* HEADER */}
-      <Box sx={{ background: `linear-gradient(135deg, rgba(32,49,40,.94), rgba(85,122,70,.8)), url("${content['hero.image'] || 'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?auto=format&fit=crop&w=2000&q=85'}") center/cover`, color: 'white', py: { xs: 8, md: 12 }, textAlign: 'center' }}>
+      <Box sx={{ background: `linear-gradient(135deg, rgba(9,39,71,.92), rgba(23,101,179,.72)), url("${content['hero.image'] || 'https://images.pexels.com/photos/356036/pexels-photo-356036.jpeg?auto=compress&cs=tinysrgb&w=2000'}") center/cover`, color: 'white', py: { xs: 8, md: 12 }, textAlign: 'center' }}>
         <Container>
           <Typography variant="h2" sx={{ fontWeight: 800, fontSize: { xs: '2rem', md: '3rem' }, mb: 2, letterSpacing: '-0.02em' }}>
-            {content['hero.title'] || 'Transparent Solar Pricing'}
+            {content['hero.title'] || 'Plan your solar investment with confidence.'}
           </Typography>
           <Typography variant="h6" sx={{ fontWeight: 400, opacity: 0.9, maxWidth: 720, mx: 'auto' }}>
-            {content['hero.subtitle'] || 'Get government subsidy up to ₹78,000 under PM Surya Ghar Yojana. Prices shown are final cost after subsidy.'}
+            {content['hero.subtitle'] || 'Explore system options, estimate your savings, and learn how eligible residential subsidies may apply.'}
           </Typography>
         </Container>
       </Box>
@@ -62,11 +65,11 @@ export default function Pricing() {
               <Stack direction="row" spacing={1.5} sx={{ mb: 2, alignItems: 'center' }}>
                 <Calculate sx={{ color: BRAND.primary, fontSize: 32 }} />
                 <Typography variant="h5" sx={{ fontWeight: 800, color: 'text.primary' }}>
-                  {content['calculator.title'] || 'Savings Calculator'}
+                  {content['calculator.title'] || 'Estimate your solar savings'}
                 </Typography>
               </Stack>
               <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3 }}>
-                {content['calculator.subtitle'] || 'Enter your monthly electricity bill and see the recommended system.'}
+                {content['calculator.subtitle'] || 'Enter your usual monthly electricity bill to see an indicative system size and savings.'}
               </Typography>
               <TextField
                 fullWidth
@@ -117,7 +120,7 @@ export default function Pricing() {
         <SectionTitle
           eyebrow={content['plans.eyebrow'] || 'Pricing Plans'}
           title={content['plans.title'] || 'Choose Your Solar System'}
-          subtitle={content['plans.subtitle'] || 'All prices include installation, GST, and 5-year workmanship warranty.'}
+          subtitle={content['plans.subtitle'] || 'Indicative prices. Final quote is confirmed after a free site survey.'}
         />
 
         {loading ? (
@@ -192,8 +195,8 @@ export default function Pricing() {
                       {p.monthly_savings && <FeatureRow text={`Save ₹${p.monthly_savings.toLocaleString('en-IN')}/month`} />}
                       {p.panels_count && <FeatureRow text={`${p.panels_count} Solar Panels`} />}
                       {p.area_required && <FeatureRow text={`Area Required: ${p.area_required}`} />}
-                      <FeatureRow text="25-Year Panel Warranty" />
                       <FeatureRow text="Free Site Survey" />
+                      <FeatureRow text="Subsidy & net-metering support" />
                     </Stack>
 
                     <Button
@@ -225,9 +228,9 @@ export default function Pricing() {
           <SectionTitle eyebrow={content['subsidy.eyebrow'] || 'Government Subsidy'} title={content['subsidy.title'] || 'PM Surya Ghar: Muft Bijli Yojana'} subtitle={content['subsidy.subtitle'] || 'Central government subsidy for residential rooftop solar systems.'} />
           <Grid container spacing={3}>
             {[
-              { label: '1 KW', subsidy: '₹18,000', note: 'Best for small homes' },
-              { label: '2 KW', subsidy: '₹36,000', note: 'Ideal for 2–3 BHK' },
-              { label: '3 KW & above', subsidy: '₹78,000', note: 'Maximum subsidy (capped)' },
+              { label: '1 KW', subsidy: settings.subsidy_1kw || '₹30,000', note: 'Best for small homes' },
+              { label: '2 KW', subsidy: settings.subsidy_2kw || '₹60,000', note: 'Ideal for 2–3 BHK' },
+              { label: '3 KW & above', subsidy: settings.subsidy_3kw || '₹78,000', note: 'Maximum subsidy (capped)' },
             ].map((s, i) => (
               <Grid size={{ xs: 12, md: 4 }} key={s.label}>
                 <Card

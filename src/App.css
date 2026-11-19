@@ -5,6 +5,9 @@ html {
 body {
   margin: 0;
   min-width: 320px;
+  color: #12314F;
+  background: #F7FAFD;
+  font-family: Inter, "Segoe UI", sans-serif;
 }
 
 img {

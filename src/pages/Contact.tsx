@@ -53,13 +53,13 @@ export default function Contact() {
 
   return (
     <Box>
-      <Box sx={{ background: `linear-gradient(135deg, rgba(32,49,40,.94), rgba(85,122,70,.8)), url("${content['hero.image'] || 'https://images.unsplash.com/photo-1509391366360-2e959784e9e8?auto=format&fit=crop&w=2000&q=85'}") center/cover`, color: 'white', py: { xs: 8, md: 12 }, textAlign: 'center' }}>
+      <Box sx={{ background: `linear-gradient(135deg, rgba(9,39,71,.92), rgba(23,101,179,.72)), url("${content['hero.image'] || 'https://images.pexels.com/photos/356036/pexels-photo-356036.jpeg?auto=compress&cs=tinysrgb&w=2000'}") center/cover`, color: 'white', py: { xs: 8, md: 12 }, textAlign: 'center' }}>
         <Container>
           <Typography variant="h2" sx={{ fontWeight: 800, fontSize: { xs: '2rem', md: '3rem' }, mb: 2 }}>
-            {content['hero.title'] || 'Get in Touch'}
+            {content['hero.title'] || 'Let’s talk about your solar plans.'}
           </Typography>
           <Typography variant="h6" sx={{ fontWeight: 400, opacity: 0.9, maxWidth: 720, mx: 'auto' }}>
-            {content['hero.subtitle'] || 'Book a free site survey or ask us anything about solar.'}
+            {content['hero.subtitle'] || 'Get clear answers, explore your rooftop options, or arrange a conversation with our solar team.'}
           </Typography>
         </Container>
       </Box>
@@ -124,8 +124,8 @@ export default function Contact() {
                   </Box>
                   <Box>
                     <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 600, mb: 0.5 }}>Working Hours</Typography>
-                    <Typography sx={{ color: 'text.primary', fontWeight: 600 }}>Mon – Sat: 9 AM – 7 PM</Typography>
-                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>Sunday: Closed</Typography>
+                    <Typography sx={{ color: 'text.primary', fontWeight: 600 }}>{settings.working_hours || 'Mon – Sat: 9 AM – 7 PM'}</Typography>
+                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>{settings.working_hours_note || 'Sunday: Closed'}</Typography>
                   </Box>
                 </Stack>
               </Card>
@@ -168,7 +168,7 @@ export default function Contact() {
           {/* Form */}
           <Grid size={{ xs: 12, md: 7 }}>
             <Card sx={{ p: { xs: 3, md: 5 }, border: `1px solid ${BRAND.light}`, boxShadow: SHADOW.card }}>
-              <SectionTitle align="left" eyebrow={content['form.eyebrow'] || 'Send a Message'} title={content['form.title'] || 'Book Free Site Survey'} />
+              <SectionTitle align="left" eyebrow={content['form.eyebrow'] || 'START A CONVERSATION'} title={content['form.title'] || 'Request a solar consultation'} />
               <FormProvider {...methods}>
                 <form onSubmit={methods.handleSubmit(submit)}>
                   <Grid container spacing={2.5}>

@@ -105,7 +105,7 @@ export default function Footer() {
             </Stack>
             <Typography variant="body2" sx={{ opacity: 0.75, lineHeight: 1.7, mb: 2 }}>
               {settings.tagline ||
-                'Powering Maharashtra with clean solar energy. Complete solar solutions — installation, RTS documentation, and material supply.'}
+                'Helping homes and businesses make the switch to rooftop solar with expert guidance, quality installation, and practical aftercare across Maharashtra.'}
             </Typography>
             {settings.gst_number && (
               <Chip
@@ -173,7 +173,7 @@ export default function Footer() {
               Services
             </Typography>
             <Stack spacing={1}>
-              {SERVICES_LINKS.map((s) => (
+              {(settings.footer_services ? settings.footer_services.split('\n').filter(Boolean) : SERVICES_LINKS).map((s) => (
                 <Typography
                   key={s}
                   sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem' }}

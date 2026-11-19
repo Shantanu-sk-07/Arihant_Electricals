@@ -398,8 +398,8 @@ function PlatformFilterRow({ value, onChange, counts }: PlatformFilterRowProps) 
                   whiteSpace: 'nowrap',
                   border: '1px solid',
                   borderColor: active ? f.color : `${BRAND.light}`,
-                  bgcolor: active ? f.color : '#fff',
-                  color: active ? '#fff' : '#475569',
+                  bgcolor: active ? f.color : 'background.paper',
+                  color: active ? '#fff' : 'text.secondary',
                   '& .MuiButton-startIcon': {
                     mr: 0.5,
                     '& > *:nth-of-type(1)': { fontSize: FILTER_ICON_SIZE },
@@ -494,7 +494,7 @@ function PhotoSortRow({
             fontSize: '0.85rem',
             fontWeight: 600,
             borderRadius: 2,
-            bgcolor: '#fff',
+            bgcolor: 'background.paper',
             '& .MuiSelect-select': { py: 0.9 },
           }}
         >
@@ -657,9 +657,9 @@ export default function MediaPage() {
     <Box>
       <Box
         sx={{
-          background: `linear-gradient(135deg, rgba(32,49,40,.94), rgba(85,122,70,.8)), url("${
+          background: `linear-gradient(135deg, rgba(9,39,71,.92), rgba(23,101,179,.72)), url("${
             content['hero.image'] ||
-            'https://images.unsplash.com/photo-1497440001374-f26997328c1b?auto=format&fit=crop&w=2000&q=85'
+            'https://images.pexels.com/photos/356036/pexels-photo-356036.jpeg?auto=compress&cs=tinysrgb&w=2000'
           }") center/cover`,
           color: 'white',
           py: { xs: 6, md: 12 },
@@ -671,14 +671,14 @@ export default function MediaPage() {
             variant="h2"
             sx={{ fontWeight: 800, fontSize: { xs: '1.6rem', md: '3rem' }, mb: 2 }}
           >
-            {content['hero.title'] || 'Our Gallery'}
+            {content['hero.title'] || 'Rooftop solar in action.'}
           </Typography>
           <Typography
             variant="h6"
             sx={{ fontWeight: 400, opacity: 0.9, fontSize: { xs: '0.9rem', md: '1.25rem' } }}
           >
             {content['hero.subtitle'] ||
-              'Real projects, real installations — see our solar work across Maharashtra.'}
+              'Browse solar projects, panels, and the clean-energy work happening across Maharashtra.'}
           </Typography>
         </Container>
       </Box>
@@ -686,10 +686,10 @@ export default function MediaPage() {
       <Container sx={{ py: { xs: 4, md: 10 } }}>
         <SectionTitle
           eyebrow={content['gallery.eyebrow'] || 'Media'}
-          title={content['gallery.title'] || 'Installation Photos & Videos'}
+          title={content['gallery.title'] || 'A closer look at solar'}
           subtitle={
             content['gallery.subtitle'] ||
-            'A visual showcase of our completed solar projects.'
+            'Explore installation highlights and real-world rooftop solar stories.'
           }
         />
 

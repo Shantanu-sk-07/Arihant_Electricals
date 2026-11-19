@@ -148,24 +148,32 @@ export default function Header() {
                   </Button>
                 );
               })}
+              {settings.phone_1 && (
+                <Button
+                  href={`tel:${settings.phone_1.replace(/\s/g, '')}`}
+                  startIcon={<PhoneIcon />}
+                  sx={{ ml: 1, color: 'text.primary', fontWeight: 700, fontSize: '0.85rem' }}
+                >
+                  {settings.phone_1}
+                </Button>
+              )}
               <Button
-                href={`https://wa.me/${whatsapp}`}
-                target="_blank"
-                rel="noopener noreferrer"
+                component={RouterLink}
+                to="/contact"
                 variant="contained"
-                startIcon={<WhatsAppIcon />}
                 sx={{
-                  ml: 2,
-                  bgcolor: BRAND.success,
+                  ml: 1,
+                  bgcolor: '#F4C65E',
+                  color: '#0B2540',
                   px: 2.5,
                   py: 1,
-                  fontWeight: 700,
+                  fontWeight: 800,
                   fontSize: '0.85rem',
-                  boxShadow: `0 6px 20px ${BRAND.success}40`,
-                  '&:hover': { bgcolor: '#128C4A', transform: 'translateY(-1px)' },
+                  boxShadow: 'none',
+                  '&:hover': { bgcolor: '#E9B846' },
                 }}
               >
-                WhatsApp
+                Get Free Quote
               </Button>
               <ThemeModeToggle />
             </Box>
@@ -174,6 +182,15 @@ export default function Header() {
           {/* MOBILE HAMBURGER */}
           {isMobile && (
             <Stack direction="row" spacing={0.5} sx={{ ml: 'auto', alignItems: 'center' }}>
+              <Button
+                component={RouterLink}
+                to="/contact"
+                size="small"
+                variant="contained"
+                sx={{ bgcolor: '#F4C65E', color: '#0B2540', fontWeight: 800, fontSize: '0.72rem', px: 1.25, boxShadow: 'none', whiteSpace: 'nowrap', '&:hover': { bgcolor: '#E9B846' } }}
+              >
+                Get Free Quote
+              </Button>
               <ThemeModeToggle />
               <IconButton
                 onClick={() => setOpen(true)}
@@ -261,6 +278,16 @@ export default function Header() {
                 {settings.phone_1}
               </Button>
             )}
+            <Button
+              fullWidth
+              component={RouterLink}
+              to="/contact"
+              onClick={handleNav}
+              variant="contained"
+              sx={{ bgcolor: '#F4C65E', color: '#0B2540', fontWeight: 800, '&:hover': { bgcolor: '#E9B846' } }}
+            >
+              Get Free Quote
+            </Button>
             <Button
               fullWidth
               href={`https://wa.me/${whatsapp}`}
