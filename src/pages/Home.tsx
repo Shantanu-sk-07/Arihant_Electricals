@@ -1,263 +1,847 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactElement } from "react";
+import { Link as RouterLink } from "react-router-dom";
 import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
-  Alert,
-  Avatar,
   Box,
-  Button,
-  Card,
-  CardContent,
-  Chip,
-  CircularProgress,
   Container,
-  Grid,
-  InputAdornment,
-  MenuItem,
-  Slider,
-  Stack,
-  TextField,
   Typography,
-} from '@mui/material';
+  Button,
+  TextField,
+  Stack,
+  Card,
+  Grid,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  CircularProgress,
+  Alert,
+  Chip,
+  Avatar,
+  Rating,
+  Snackbar,
+  MenuItem,
+} from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import SolarPowerIcon from "@mui/icons-material/SolarPower";
+import VerifiedIcon from "@mui/icons-material/Verified";
+import BoltIcon from "@mui/icons-material/Bolt";
+import HandymanIcon from "@mui/icons-material/Handyman";
+import SupportAgentIcon from "@mui/icons-material/SupportAgent";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import ShieldIcon from "@mui/icons-material/Shield";
+import AutorenewIcon from "@mui/icons-material/Autorenew";
+import PhoneIphoneIcon from "@mui/icons-material/PhoneIphone";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import HomeIcon from "@mui/icons-material/Home";
+import ApartmentIcon from "@mui/icons-material/Apartment";
+import StorefrontIcon from "@mui/icons-material/Storefront";
+import FactoryIcon from "@mui/icons-material/Factory";
+import StarIcon from "@mui/icons-material/Star";
+import { SITE_INFO } from "../config/SiteInfo";
 import {
-  ArrowForward,
-  Business,
-  CheckCircle,
-  ExpandMore,
-  Home as HomeIcon,
-  Apartment,
-  Star,
-  WhatsApp,
-} from '@mui/icons-material';
-import { motion } from 'framer-motion';
-import { Link as RouterLink } from 'react-router-dom';
-import { useBenefits } from '../hooks/useBenefits';
-import { useContent } from '../hooks/useContent';
-import { usePricing } from '@/hooks/usePricing';
-import { useServices } from '../hooks/useServices';
-import { useSettings } from '../hooks/useSettings';
-import { useTestimonials } from '../hooks/useTestimonials';
-import SectionTitle from '../components/SectionTitle';
-import { getMappedIcon } from '../utils/IconMapping';
-import { supabase } from '../lib/supabase';
-import { showSnackbar } from '@/components/ToastMessage';
+  fetchPublicContent,
+  submitLead,
+} from "../config/Services";
+import type {
+  FaqContent,
+  HeroContent,
+  LeadRequest,
+  StatsContent,
+  TestimonialsContent,
+  WhyUsContent,
+} from "../types";
+import {
+  BLUE,
+  FONT,
+  IMG,
+  INK,
+  LINE,
+  MUTED,
+  NAVY,
+  NAVY_DEEP,
+  SKY_DARK,
+  SKY_LIGHT,
+  SOFT,
+  YELLOW,
+  btn,
+  navyOverlay,
+  SectionHead,
+} from "./SolarTheme";
 
-const HERO_IMAGE =
-  'https://images.pexels.com/photos/356036/pexels-photo-356036.jpeg?auto=compress&cs=tinysrgb&w=2400';
+/* ------------------------------------------------------------------ */
+/* Segments ("Get Solar for")                                          */
+/* ------------------------------------------------------------------ */
 
-const NAVY = '#0B2540';
-const YELLOW = '#F4C65E';
+type Segment = "residential" | "society" | "commercial" | "industrial";
 
-const reveal = {
-  hidden: { opacity: 0, y: 24 },
-  visible: { opacity: 1, y: 0 },
+interface SegmentConfig {
+  id: Segment;
+  label: string;
+  blurb: string;
+  icon: ReactElement;
+  headline: string;
+  subheadline: string;
+}
+
+const SEGMENTS: SegmentConfig[] = [
+  {
+    id: "residential",
+    label: "Homes",
+    blurb: "Save up to 90% on your home electricity bills.",
+    icon: <HomeIcon sx={{ fontSize: 34 }} />,
+    headline: "Professional Solar RTS, installed right on your roof.",
+    subheadline:
+      "Site survey, 3D design, installation, subsidy and service — one trusted local team.",
+  },
+  {
+    id: "society",
+    label: "Housing Societies",
+    blurb: "Cut common-area power bills and add long-term value.",
+    icon: <ApartmentIcon sx={{ fontSize: 34 }} />,
+    headline: "Turn your society's rooftop into a power plant.",
+    subheadline:
+      "Common-area savings. Group net-metering. Subsidy handled end-to-end.",
+  },
+  {
+    id: "commercial",
+    label: "Commercial",
+    blurb: "Lower operating costs with a rooftop that earns.",
+    icon: <StorefrontIcon sx={{ fontSize: 34 }} />,
+    headline: "Rooftop solar that pays back in 2–4 years.",
+    subheadline:
+      "Commercial Solar RTS systems with engineered design and full O&M.",
+  },
+  {
+    id: "industrial",
+    label: "Industrial",
+    blurb: "MW-scale rooftop plants with performance support.",
+    icon: <FactoryIcon sx={{ fontSize: 34 }} />,
+    headline: "Industrial-grade Solar RTS. Zero middlemen.",
+    subheadline:
+      "MW-scale rooftop solar with engineered generation and O&M support.",
+  },
+];
+
+/* ------------------------------------------------------------------ */
+/* Fallback content                                                    */
+/* ------------------------------------------------------------------ */
+
+const FALLBACK_HERO: HeroContent = {
+  headline: "Professional Solar RTS, installed right on your roof.",
+  subheadline:
+    "Site survey, 3D design, installation, subsidy and service — one trusted local team.",
+  ctaPrimary: "Book a Free Site Visit",
+  ctaSecondary: "Calculate Savings",
+  imageUrl: "",
 };
 
-const STEPS = [
-  { title: 'Free home visit & rooftop survey', desc: 'Our team measures your roof and designs a system for maximum generation.' },
-  { title: 'Clear design & quote', desc: 'You get a system size, price and savings estimate tailored to your bill.' },
-  { title: 'Installation & subsidy support', desc: 'We install, connect and handle net-metering and PM Surya Ghar paperwork.' },
-  { title: 'Solar on. You save.', desc: 'Your bill drops from day one, and we stay available for service and support.' },
+const FALLBACK_STATS: StatsContent = {
+  items: [
+    { label: "Homes Solarized", value: 25000, suffix: "+" },
+    { label: "MW Installed", value: 90, suffix: "+" },
+    { label: "Subsidy Delivered", value: 120, suffix: " Cr" },
+    { label: "On National Portal", value: 25000, suffix: "" },
+  ],
+};
+
+const FALLBACK_WHYUS: WhyUsContent = {
+  heading: "Why Families Across Maharashtra Trust Arihant Electricals",
+  items: [
+    {
+      title: "Guaranteed Savings",
+      description:
+        "A Savings Guarantee with a money-back promise on every system we install.",
+      icon: "verified",
+    },
+    {
+      title: "Hassle-free Process",
+      description:
+        "Installation, subsidy and service — all handled directly by us. Zero middlemen.",
+      icon: "bolt",
+    },
+    {
+      title: "Storm-proof Structure",
+      description:
+        "WindPro Mount™ tested for 170 kmph storms — built for India's toughest weather.",
+      icon: "handyman",
+    },
+    {
+      title: "Reliable After-sales Service",
+      description:
+        "Regular proactive maintenance for steady, year-after-year performance.",
+      icon: "support",
+    },
+  ],
+};
+
+const WHY_PHOTOS = [IMG.closeUp, IMG.installers, IMG.heroRooftop, IMG.society];
+
+const TRUST_ITEMS: { icon: ReactElement; title: string }[] = [
+  {
+    icon: <ShieldIcon sx={{ fontSize: 34 }} />,
+    title: "Generation guarantee or ₹8/unit Money Back",
+  },
+  {
+    icon: <AutorenewIcon sx={{ fontSize: 34 }} />,
+    title: "₹0 Repair and Replacement cost",
+  },
+  {
+    icon: <HandymanIcon sx={{ fontSize: 34 }} />,
+    title: "Proactive service visits",
+  },
+  {
+    icon: <PhoneIphoneIcon sx={{ fontSize: 34 }} />,
+    title: "App to track real-time power generation",
+  },
 ];
 
-const FAQS = [
-  { q: 'How much can I save with rooftop solar?', a: 'Most homes see a large cut in their monthly bill from the first month. Use the calculator above for an estimate based on your own bill; we confirm exact numbers at the free site survey.' },
-  { q: 'How big a system do I need?', a: 'It depends on your monthly consumption, shadow-free roof area and sunlight in your location. We size it after a free roof survey.' },
-  { q: 'Do I need to pay everything upfront?', a: 'Not necessarily. Subsidy and bank finance options can reduce the upfront amount. Talk to our team for options that fit you.' },
-  { q: 'Who handles the subsidy and net-metering paperwork?', a: 'We do. Our team manages the application and follow-ups so you do not have to chase offices.' },
-  { q: 'How long does installation take?', a: 'Most home systems are installed within a few days once the design is approved, depending on roof, material availability and weather.' },
-  { q: 'Will solar work during monsoon or a power cut?', a: 'Panels still generate in cloudy weather, at reduced output. A standard on-grid system shuts down during a grid outage for safety; a hybrid system with battery can keep key loads running.' },
-  { q: 'How often should panels be cleaned?', a: 'Cleaning once or twice a month with water and a soft cloth keeps generation healthy. We can guide you on the best routine.' },
+const FALLBACK_TESTIMONIALS: TestimonialsContent = {
+  heading: "90% of our customers recommend us",
+  googleRating: 4.8,
+  googleReviews: 15000,
+  items: [
+    {
+      name: "Santosh Singh",
+      location: "Pune",
+      quote:
+        "My solar journey with Arihant Electricals has been smooth and satisfying. Bills dropped from ₹18,000 to ₹0!",
+      rating: 5,
+      avatarUrl: "",
+    },
+    {
+      name: "Dr. Sudhakar Shukla",
+      location: "Nashik",
+      quote:
+        "From consultation to installation, everything was smooth! I've seen a 70% drop in electricity bills.",
+      rating: 5,
+      avatarUrl: "",
+    },
+    {
+      name: "Samir Patil",
+      location: "Mumbai",
+      quote:
+        "Arihant Electricals truly impressed me. The installation was clean and damage-free.",
+      rating: 5,
+      avatarUrl: "",
+    },
+  ],
+};
+
+const FALLBACK_FAQ: FaqContent = {
+  heading: "All your questions, answered.",
+  items: [
+    {
+      question: "What is a solar rooftop system?",
+      answer:
+        "A solar rooftop system converts sunlight into usable electricity using panels, an inverter, mounting structures, and cabling.",
+    },
+    {
+      question: "How much can I save on my electricity bill?",
+      answer:
+        "Most homeowners cut their bills by 80–90% from Day 1, with savings growing as tariffs rise.",
+    },
+    {
+      question: "Do solar panels work during cloudy weather?",
+      answer:
+        "Yes — with reduced efficiency. The drop is already factored into the generation estimates for every project.",
+    },
+    {
+      question: "How long does installation take?",
+      answer:
+        "Once the 3D rooftop design is approved, installation is completed in 1 day, subject to weather.",
+    },
+    {
+      question: "What subsidy is available?",
+      answer:
+        "Residential rooftop solar receives a government subsidy up to ₹78,000 for systems above 3 kW.",
+    },
+    {
+      question: "Is there financing available?",
+      answer:
+        "Yes. We offer flexible EMI plans starting at ₹0 down payment with collateral-free loans from partner banks.",
+    },
+    {
+      question: "How long does a solar system last?",
+      answer:
+        "A high-quality system lasts 25+ years. Panels carry a 25-year performance warranty; inverters carry 5–10 years.",
+    },
+    {
+      question: "What maintenance is required?",
+      answer:
+        "Quarterly cleaning and occasional inspections. We include 5 years of free annual maintenance with every install.",
+    },
+  ],
+};
+
+const STAT_ICONS: Record<string, ReactElement> = {
+  verified: <VerifiedIcon sx={{ fontSize: 30 }} />,
+  bolt: <BoltIcon sx={{ fontSize: 30 }} />,
+  handyman: <HandymanIcon sx={{ fontSize: 30 }} />,
+  support: <SupportAgentIcon sx={{ fontSize: 30 }} />,
+};
+
+const HANDLE_STEPS = [
+  {
+    title: "Free Home Visit & Rooftop Survey",
+    desc: "Our team measures your rooftop to design a solar system for maximum generation.",
+  },
+  {
+    title: "Free 3D Solar Design",
+    desc: "We share a personalised 3D rooftop design so you can see exactly how it will look on your home.",
+  },
+  {
+    title: "Hassle-Free Installation & Subsidy Support",
+    desc: "Our experts install your system and handle all the paperwork, including the subsidy.",
+  },
+  {
+    title: "Solar On. You Save. We Maintain.",
+    desc: "Your system starts saving from day one while we handle maintenance year after year.",
+  },
 ];
 
-const BILL_RANGES = ['Less than ₹1,500', '₹1,500 – ₹2,500', '₹2,500 – ₹4,000', '₹4,000 – ₹8,000', 'More than ₹8,000'];
+const BILL_RANGES = [
+  "Less than ₹1500",
+  "₹1500 - ₹2500",
+  "₹2500 - ₹4000",
+  "₹4000 - ₹8000",
+  "More than ₹8000",
+];
 
-function num(value: string | undefined, fallback: number) {
-  const n = parseFloat(value ?? '');
-  return Number.isFinite(n) && n > 0 ? n : fallback;
+/* ------------------------------------------------------------------ */
+/* Recommendation calculator                                           */
+/* ------------------------------------------------------------------ */
+
+const TARIFF_PER_UNIT = 8;
+const UNITS_PER_KW_PER_MONTH = 120;
+
+interface Recommendation {
+  kw: number;
+  isRecommended: boolean;
+  systemCost: number;
+  subsidy: number;
+  netCost: number;
+  monthlySavings: number;
+  paybackYears: number;
 }
 
-function subsidyForKw(kw: number) {
-  if (kw >= 3) return 78000;
-  if (kw >= 2) return 60000;
-  return 30000;
+function buildRecommendations(monthlyBill: number): Recommendation[] {
+  const recommendedKw = Math.max(
+    1,
+    Math.round((monthlyBill / (TARIFF_PER_UNIT * UNITS_PER_KW_PER_MONTH)) * 10) /
+      10
+  );
+  const recommendedSize = Math.max(1, Math.round(recommendedKw));
+  const options = Array.from(
+    new Set([
+      Math.max(1, Math.ceil(recommendedKw - 1)),
+      Math.max(1, Math.round(recommendedKw)),
+      Math.max(2, Math.ceil(recommendedKw + 1)),
+    ])
+  ).slice(0, 3);
+  return options.map((kw) => {
+    const systemCost = kw * 55000;
+    const subsidy = kw <= 1 ? 30000 : kw === 2 ? 60000 : kw >= 3 ? 78000 : 0;
+    const netCost = Math.max(0, systemCost - subsidy);
+    const monthlySavings = Math.min(
+      monthlyBill,
+      kw * UNITS_PER_KW_PER_MONTH * TARIFF_PER_UNIT
+    );
+    const paybackYears =
+      monthlySavings > 0
+        ? Math.round((netCost / (monthlySavings * 12)) * 10) / 10
+        : 0;
+    return {
+      kw,
+      isRecommended: kw === recommendedSize,
+      systemCost,
+      subsidy,
+      netCost,
+      monthlySavings,
+      paybackYears,
+    };
+  });
 }
+
+/* ------------------------------------------------------------------ */
+/* Count-up                                                            */
+/* ------------------------------------------------------------------ */
+
+function useCountUp(target: number, duration = 1600) {
+  const [value, setValue] = useState<number>(0);
+  const ref = useRef<HTMLDivElement | null>(null);
+  const started = useRef<boolean>(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !started.current) {
+            started.current = true;
+            const start = performance.now();
+            const tick = (now: number): void => {
+              const progress = Math.min((now - start) / duration, 1);
+              setValue(Math.floor(progress * target));
+              if (progress < 1) requestAnimationFrame(tick);
+              else setValue(target);
+            };
+            requestAnimationFrame(tick);
+          }
+        });
+      },
+      { threshold: 0.3 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [target, duration]);
+
+  return { value, ref };
+}
+
+function StatBlock({
+  label,
+  value,
+  suffix,
+}: {
+  label: string;
+  value: number;
+  suffix: string;
+}) {
+  const { value: count, ref } = useCountUp(value);
+  return (
+    <Box ref={ref} sx={{ textAlign: "center" }}>
+      <Typography
+        sx={{
+          fontWeight: 800,
+          fontSize: { xs: "2rem", md: "3rem" },
+          color: YELLOW,
+          lineHeight: 1.1,
+        }}
+      >
+        {count.toLocaleString("en-IN")}
+        {suffix}
+      </Typography>
+      <Typography sx={{ color: "rgba(255,255,255,0.85)", fontWeight: 500 }}>
+        {label}
+      </Typography>
+    </Box>
+  );
+}
+
+const fieldSx = {
+  "& .MuiOutlinedInput-root": {
+    borderRadius: "10px",
+    backgroundColor: "#FFFFFF",
+    "& fieldset": { borderColor: LINE },
+    "&:hover fieldset": { borderColor: BLUE },
+    "&.Mui-focused fieldset": { borderColor: NAVY },
+  },
+};
+
+/* ------------------------------------------------------------------ */
+/* Page                                                                */
+/* ------------------------------------------------------------------ */
 
 export default function Home() {
-  const { content } = useContent('home');
-  const { settings } = useSettings();
-  const { benefits } = useBenefits();
-  const { services } = useServices();
-  const { plans } = usePricing();
-  const { testimonials } = useTestimonials();
+  const [hero, setHero] = useState<HeroContent>(FALLBACK_HERO);
+  const [stats, setStats] = useState<StatsContent>(FALLBACK_STATS);
+  const [whyUs, setWhyUs] = useState<WhyUsContent>(FALLBACK_WHYUS);
+  const [testimonials, setTestimonials] =
+    useState<TestimonialsContent>(FALLBACK_TESTIMONIALS);
+  const [faq, setFaq] = useState<FaqContent>(FALLBACK_FAQ);
 
-  const whatsapp = settings.whatsapp_1 || '917774855501';
-  const phone = settings.phone_1 || '+91 77748 55501';
+  const [segment, setSegment] = useState<Segment>("residential");
+  const segmentConfig = SEGMENTS.find((s) => s.id === segment) ?? SEGMENTS[0];
 
-  const stats = [
-    { value: settings.stat_installations || '500+', label: content['stats.installation_label'] || 'Homes powered' },
-    { value: settings.stat_capacity || '2 MW+', label: content['stats.capacity_label'] || 'Solar installed' },
-    { value: settings.stat_experience || '10+', label: content['stats.experience_label'] || 'Years of experience' },
-    { value: settings.stat_subsidy || '₹78,000', label: content['stats.subsidy_label'] || 'Max subsidy support' },
-  ];
+  const [photoOffset] = useState<number>(() => Math.floor(Math.random() * WHY_PHOTOS.length));
+  const [heroPhoto] = useState<string>(() => WHY_PHOTOS[photoOffset]);
+  const [featuredInstallPhoto] = useState<string>(() => WHY_PHOTOS[(photoOffset + 1) % WHY_PHOTOS.length]);
+  const [billInput, setBillInput] = useState<string>("");
+  const [calcError, setCalcError] = useState<string>("");
+  const [showRecommendations, setShowRecommendations] = useState<boolean>(false);
 
-  const activeBenefits = benefits.filter((b) => b.is_active).slice(0, 4);
-  const activeServices = services.filter((s) => s.is_active).slice(0, 3);
-  const activePlans = plans.filter((p) => p.is_active).slice(0, 3);
-  const activeTestimonials = testimonials.filter((t) => t.is_active).slice(0, 3);
+  const [leadName, setLeadName] = useState<string>("");
+  const [leadPhone, setLeadPhone] = useState<string>("");
+  const [leadBillRange, setLeadBillRange] = useState<string>("");
+  const [leadBill, setLeadBill] = useState<string>("");
+  const [leadMessage] = useState<string>("");
+  const [leadLoading, setLeadLoading] = useState<boolean>(false);
+  const [toast, setToast] = useState<string>("");
+  const [toastSeverity, setToastSeverity] = useState<"success" | "error">(
+    "success"
+  );
 
-  const steps = STEPS.map((step, i) => ({
-    title: content[`steps.step${i + 1}.title`] || step.title,
-    desc: content[`steps.step${i + 1}.description`] || step.desc,
-  }));
+  useEffect(() => {
+    let active = true;
+    const load = async (): Promise<void> => {
+      try {
+        const [h, s, w, t, f] = await Promise.all([
+          fetchPublicContent<HeroContent>("hero"),
+          fetchPublicContent<StatsContent>("stats"),
+          fetchPublicContent<WhyUsContent>("whyus"),
+          fetchPublicContent<TestimonialsContent>("testimonials"),
+          fetchPublicContent<FaqContent>("faq"),
+        ]);
+        if (!active) return;
+        setHero(h);
+        setStats(s);
+        setWhyUs(w);
+        setTestimonials(t);
+        setFaq(f);
+      } catch {
+        /* fallbacks already rendered */
+      }
+    };
+    void load();
+    return () => {
+      active = false;
+    };
+  }, []);
 
-  /* ---------------- CALCULATOR (all rates editable from dashboard) ---------------- */
-  const [bill, setBill] = useState(3000);
-  const unitRate = num(settings.calc_unit_rate, 8); // ₹ per unit
-  const unitsPerKwDay = num(settings.calc_units_per_kw_day, 4); // generation per kW per day
-  const costPerKw = num(settings.calc_cost_per_kw, 60000); // fallback if no plan matches
-  const billReduction = Math.min(num(settings.calc_bill_reduction_percent, 90), 100) / 100;
+  const billNum = Number(billInput);
+  const recommendations =
+    showRecommendations && !Number.isNaN(billNum) && billNum > 0
+      ? buildRecommendations(billNum)
+      : [];
 
-  const result = useMemo(() => {
-    const monthlyUnits = bill / unitRate;
-    const kw = Math.max(1, Math.ceil(monthlyUnits / 30 / unitsPerKwDay));
-    const sorted = [...plans].filter((p) => p.is_active).sort((a, b) => a.kw - b.kw);
-    const plan = sorted.find((p) => p.kw >= kw);
-    const systemKw = plan ? plan.kw : kw;
-    const subsidy = plan ? plan.subsidy_amount : subsidyForKw(kw);
-    const total = plan ? plan.total_cost : kw * costPerKw;
-    const finalCost = plan ? plan.final_cost : Math.max(total - subsidy, 0);
-    const monthlySaving = plan?.monthly_savings ?? Math.round(bill * billReduction);
-    const payback = monthlySaving > 0 ? (finalCost / (monthlySaving * 12)).toFixed(1) : '—';
-    return { systemKw, subsidy, finalCost, monthlySaving, yearlySaving: monthlySaving * 12, payback };
-  }, [bill, plans, unitRate, unitsPerKwDay, costPerKw, billReduction]);
+  const handleCalculate = (): void => {
+    setCalcError("");
+    setShowRecommendations(false);
+    if (!billInput || Number.isNaN(billNum) || billNum <= 0) {
+      setCalcError("Enter a valid monthly bill amount");
+      return;
+    }
+    setShowRecommendations(true);
+  };
 
-  /* ---------------- LEAD FORM ---------------- */
-  const [form, setForm] = useState({ name: '', phone: '', bill: '', pincode: '' });
-  const [sending, setSending] = useState(false);
-  const [sent, setSent] = useState(false);
-  const setField = (k: keyof typeof form) => (e: { target: { value: string } }) =>
-    setForm((f) => ({ ...f, [k]: e.target.value }));
+  const scrollTo = (id: string): void => {
+    document
+      .getElementById(id)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
-  const submitLead = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (form.name.trim().length < 2) return showSnackbar('error', 'Please enter your name.');
-    if (!/^[6-9]\d{9}$/.test(form.phone)) return showSnackbar('error', 'Enter a valid 10-digit mobile number.');
-    if (!form.bill) return showSnackbar('error', 'Please select your monthly bill range.');
-    setSending(true);
+  const billFromRange = (range: string): number => {
+    const map: Record<string, number> = {
+      "Less than ₹1500": 1000,
+      "₹1500 - ₹2500": 2000,
+      "₹2500 - ₹4000": 3250,
+      "₹4000 - ₹8000": 6000,
+      "More than ₹8000": 10000,
+    };
+    return map[range] ?? 0;
+  };
+
+  const handleLeadSubmit = async (): Promise<void> => {
+    if (!leadName.trim() || !/^\d{10}$/.test(leadPhone.replace(/\D/g, ""))) {
+      setToastSeverity("error");
+      setToast("Enter a valid name and 10-digit phone");
+      return;
+    }
+    const exactBill = Number(leadBill) > 0 ? Number(leadBill) : 0;
+    const payload: LeadRequest = {
+      name: leadName.trim(),
+      phone: leadPhone.replace(/\D/g, ""),
+      pincode: "000000",
+      monthlyBill: exactBill || billFromRange(leadBillRange),
+      message: `${leadMessage.trim()}${
+        leadBillRange ? ` Bill range: ${leadBillRange}` : ""
+      }`.trim(),
+    };
+    setLeadLoading(true);
     try {
-      const { error } = await supabase.from('contacts').insert({
-        name: form.name.trim(),
-        email: '',
-        phone: form.phone,
-        message: `Quick enquiry from Home page. Monthly bill: ${form.bill}. PIN: ${form.pincode || 'n/a'}.`,
-      });
-      if (error) throw error;
-      setSent(true);
-      setForm({ name: '', phone: '', bill: '', pincode: '' });
+      await submitLead(payload);
+      setToastSeverity("success");
+      setToast("Enquiry submitted. Our team will contact you shortly.");
+      setLeadName("");
+      setLeadPhone("");
+      setLeadBill("");
+      setLeadBillRange("");
     } catch (err) {
-      showSnackbar('error', err instanceof Error ? err.message : 'Unable to submit. Please try WhatsApp.');
+      setToastSeverity("error");
+      setToast(err instanceof Error ? err.message : "Submission failed");
     } finally {
-      setSending(false);
+      setLeadLoading(false);
     }
   };
 
-  const ctaBtn = {
-    px: 3.5,
-    py: 1.5,
-    color: NAVY,
-    bgcolor: YELLOW,
-    fontWeight: 800,
-    borderRadius: '10px',
-    '&:hover': { bgcolor: '#E9B846' },
-  } as const;
-
   return (
-    <Box sx={{ overflow: 'hidden', bgcolor: 'background.default', color: 'text.primary' }}>
-      {/* ================= HERO ================= */}
+    <Box sx={{ fontFamily: FONT, backgroundColor: "#FFFFFF", color: INK }}>
+      {/* ============ HERO ============ */}
       <Box
         sx={{
-          minHeight: { xs: 560, md: 640 },
-          display: 'flex',
-          alignItems: 'center',
-          color: 'white',
-          backgroundImage: `linear-gradient(90deg, rgba(11,37,64,.92) 0%, rgba(11,37,64,.7) 55%, rgba(11,37,64,.25) 100%), url("${content['hero.image'] || HERO_IMAGE}")`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
+          color: "#FFFFFF",
+          pt: { xs: 8, md: 12 },
+          pb: { xs: 14, md: 20 },
+          px: 2,
+          backgroundImage: navyOverlay(heroPhoto, 0.78),
+          backgroundSize: "cover",
+          backgroundPosition: "center",
         }}
       >
-        <Container sx={{ py: { xs: 8, md: 12 } }}>
-          <Box component={motion.div} initial="hidden" animate="visible" variants={reveal} transition={{ duration: 0.6 }} sx={{ maxWidth: 680 }}>
-            <Chip
-              icon={<Star sx={{ color: `${YELLOW} !important` }} />}
-              label={content['hero.kicker'] || settings.rating_text || 'Trusted local rooftop solar team'}
-              sx={{ mb: 3, color: 'white', bgcolor: 'rgba(255,255,255,.14)', fontWeight: 600 }}
-            />
-            <Typography component="h1" sx={{ mb: 2, fontSize: { xs: '2.3rem', md: '3.7rem' }, fontWeight: 800, lineHeight: 1.1, letterSpacing: '-0.03em' }}>
-              {content['hero.title'] || 'Solar that delivers on its promise.'}
-            </Typography>
-            <Typography sx={{ mb: 4, fontSize: { xs: '1.02rem', md: '1.2rem' }, lineHeight: 1.7, color: 'rgba(255,255,255,.88)' }}>
-              {content['hero.subtitle'] || 'Lower electricity bills. End-to-end care. Complete peace of mind.'}
-            </Typography>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
-              <Button href="#get-quote" variant="contained" endIcon={<ArrowForward />} sx={ctaBtn}>
-                {content['hero.cta'] || 'Get a FREE consultation'}
-              </Button>
-              <Button
-                href={`https://wa.me/${whatsapp}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                variant="outlined"
-                startIcon={<WhatsApp />}
-                sx={{ px: 3, py: 1.5, color: 'white', borderColor: 'rgba(255,255,255,.7)', borderRadius: '10px', '&:hover': { borderColor: 'white', bgcolor: 'rgba(255,255,255,.1)' } }}
+        <Container maxWidth="lg">
+          <Grid container spacing={5} sx={{ alignItems: "center" }}>
+            <Grid size={{ xs: 12, md: 7 }}>
+              <Chip
+                icon={<StarIcon sx={{ color: `${YELLOW} !important` }} />}
+                label="Solar RTS Specialists · Local Service Team"
+                sx={{
+                  bgcolor: "rgba(255,255,255,0.14)",
+                  color: "#FFFFFF",
+                  fontWeight: 600,
+                  backdropFilter: "blur(6px)",
+                  mb: 3,
+                }}
+              />
+              <Typography
+                component="h1"
+                sx={{
+                  fontWeight: 800,
+                  lineHeight: 1.1,
+                  fontSize: { xs: "2.2rem", md: "3.4rem" },
+                }}
               >
-                {content['hero.secondary_cta'] || 'Chat on WhatsApp'}
-              </Button>
-            </Stack>
-          </Box>
-        </Container>
-      </Box>
+                {segmentConfig.headline}
+              </Typography>
+              <Typography
+                sx={{
+                  mt: 2.5,
+                  opacity: 0.95,
+                  fontSize: { xs: "1.05rem", md: "1.25rem" },
+                  maxWidth: 580,
+                }}
+              >
+                {segmentConfig.subheadline}
+              </Typography>
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={2}
+                sx={{ mt: 4 }}
+              >
+                <Button
+                  variant="contained"
+                  size="large"
+                  onClick={() => scrollTo("lead-form")}
+                  sx={btn("yellow")}
+                >
+                  {hero.ctaPrimary}
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="large"
+                  onClick={() => scrollTo("calculator")}
+                  sx={btn("ghost")}
+                >
+                  {hero.ctaSecondary}
+                </Button>
+              </Stack>
+              <Stack
+                direction="row"
+                spacing={1}
+                sx={{ mt: 4, flexWrap: "wrap", rowGap: 1 }}
+              >
+                {SITE_INFO.certifications.map((c) => (
+                  <Chip
+                    key={c}
+                    label={c}
+                    size="small"
+                    sx={{
+                      bgcolor: "rgba(255,255,255,0.16)",
+                      color: "#FFFFFF",
+                      fontWeight: 600,
+                    }}
+                  />
+                ))}
+              </Stack>
+            </Grid>
 
-      {/* ================= SOLAR FOR ================= */}
-      <Container sx={{ mt: { xs: -4, md: -6 }, position: 'relative', zIndex: 2 }}>
-        <Grid container spacing={2}>
-          {[
-            { icon: <HomeIcon />, title: 'Homes', text: content['for.homes'] || 'Cut your home electricity bill with rooftop solar.' },
-            { icon: <Apartment />, title: 'Housing Societies', text: content['for.societies'] || 'Reduce common-area power costs.' },
-            { icon: <Business />, title: 'Commercial', text: content['for.commercial'] || 'Power your shop, office or factory with solar.' },
-          ].map((c) => (
-            <Grid size={{ xs: 12, md: 4 }} key={c.title}>
-              <Card component={RouterLink} to="/contact" sx={{ display: 'flex', gap: 2, p: 2.5, alignItems: 'center', textDecoration: 'none', color: 'inherit', height: '100%' }}>
-                <Box sx={{ width: 52, height: 52, flexShrink: 0, display: 'grid', placeItems: 'center', borderRadius: 3, bgcolor: 'action.hover', color: 'primary.main' }}>{c.icon}</Box>
-                <Box sx={{ flex: 1 }}>
-                  <Typography sx={{ fontWeight: 800 }}>{c.title}</Typography>
-                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>{c.text}</Typography>
-                </Box>
-                <ArrowForward fontSize="small" sx={{ color: 'text.secondary' }} />
+            {/* Quick savings card */}
+            <Grid size={{ xs: 12, md: 5 }}>
+              <Card
+                elevation={0}
+                sx={{
+                  p: { xs: 3, md: 4 },
+                  borderRadius: "20px",
+                  boxShadow: "0 30px 70px rgba(0,0,0,0.35)",
+                }}
+              >
+                <Typography
+                  variant="overline"
+                  sx={{ color: BLUE, fontWeight: 800, letterSpacing: "0.16em" }}
+                >
+                  30-SECOND ESTIMATE
+                </Typography>
+                <Typography
+                  sx={{ fontWeight: 800, color: NAVY, fontSize: "1.6rem", mb: 0.5 }}
+                >
+                  What could solar save you?
+                </Typography>
+                <Typography variant="body2" sx={{ color: MUTED, mb: 2.5 }}>
+                  Enter your average monthly bill and see a suggested rooftop
+                  system.
+                </Typography>
+                <TextField
+                  fullWidth
+                  value={billInput}
+                  onChange={(e) => {
+                    setBillInput(e.target.value.replace(/[^\d]/g, ""));
+                    setShowRecommendations(false);
+                  }}
+                  placeholder="Monthly bill, e.g. 3000"
+                  slotProps={{
+                    htmlInput: { inputMode: "numeric" },
+                    input: {
+                      startAdornment: (
+                        <Typography sx={{ mr: 1, fontWeight: 700, color: NAVY }}>
+                          ₹
+                        </Typography>
+                      ),
+                    },
+                  }}
+                  sx={{ ...fieldSx, mb: 2 }}
+                />
+                <Button
+                  fullWidth
+                  size="large"
+                  variant="contained"
+                  endIcon={<ArrowForwardIcon />}
+                  onClick={() => scrollTo("calculator")}
+                  sx={{ ...btn("navy"), py: 1.5 }}
+                >
+                  See my system size
+                </Button>
+                <Stack spacing={1} sx={{ mt: 2.5 }}>
+                  {[
+                    "Free rooftop survey & 3D design",
+                    "Subsidy paperwork handled by us",
+                  ].map((l) => (
+                    <Box key={l} sx={{ display: "flex", gap: 1 }}>
+                      <CheckCircleIcon sx={{ fontSize: 18, color: BLUE }} />
+                      <Typography variant="body2" sx={{ color: MUTED }}>
+                        {l}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Stack>
               </Card>
             </Grid>
-          ))}
-        </Grid>
+          </Grid>
+        </Container>
+      </Box>
+
+      {/* ============ GET SOLAR FOR (overlaps hero) ============ */}
+      <Container maxWidth="lg" sx={{ mt: { xs: -9, md: -12 }, position: "relative" }}>
+        <Card
+          elevation={0}
+          sx={{
+            p: { xs: 2.5, md: 4 },
+            borderRadius: "20px",
+            boxShadow: "0 24px 60px rgba(7,26,64,0.18)",
+          }}
+        >
+          <Typography
+            sx={{ fontWeight: 800, color: NAVY, fontSize: "1.5rem", mb: 2.5 }}
+          >
+            Solar RTS for every rooftop
+          </Typography>
+          <Grid container spacing={2}>
+            {SEGMENTS.map((s) => {
+              const active = s.id === segment;
+              return (
+                <Grid key={s.id} size={{ xs: 12, sm: 6, md: 3 }}>
+                  <Box
+                    onClick={() => setSegment(s.id)}
+                    sx={{
+                      cursor: "pointer",
+                      height: "100%",
+                      p: 2.5,
+                      borderRadius: "14px",
+                      border: `2px solid ${active ? NAVY : LINE}`,
+                      backgroundColor: active ? NAVY : "#FFFFFF",
+                      color: active ? "#FFFFFF" : INK,
+                      transition: "all .2s",
+                      "&:hover": {
+                        borderColor: NAVY,
+                        transform: "translateY(-3px)",
+                      },
+                    }}
+                  >
+                    <Box sx={{ color: active ? YELLOW : BLUE, mb: 1 }}>
+                      {s.icon}
+                    </Box>
+                    <Typography sx={{ fontWeight: 800, fontSize: "1.1rem" }}>
+                      {s.label}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ mt: 0.5, color: active ? "rgba(255,255,255,0.8)" : MUTED }}
+                    >
+                      {s.blurb}
+                    </Typography>
+                  </Box>
+                </Grid>
+              );
+            })}
+          </Grid>
+        </Card>
       </Container>
 
-      {/* ================= WHY TRUST ================= */}
-      <Box component="section" sx={{ py: { xs: 8, md: 11 } }}>
-        <Container>
-          <SectionTitle
-            eyebrow={content['intro.eyebrow'] || 'WHY FAMILIES TRUST US'}
-            title={content['intro.title'] || 'Why families across Maharashtra trust Arihant Electricals'}
-            subtitle={content['intro.body'] || 'Installation, subsidy paperwork and service handled by one local team.'}
-          />
-          <Grid container spacing={2.5}>
-            {activeBenefits.map((b, i) => (
-              <Grid size={{ xs: 12, sm: 6, md: 3 }} key={b.id}>
-                <Card component={motion.div} variants={reveal} initial="hidden" whileInView="visible" viewport={{ once: true }} transition={{ delay: i * 0.08, duration: 0.45 }} sx={{ height: '100%', textAlign: 'center', p: 3 }}>
-                  <Box sx={{ mx: 'auto', mb: 2, width: 60, height: 60, display: 'grid', placeItems: 'center', borderRadius: '50%', bgcolor: 'action.hover', color: 'primary.main', '& svg': { fontSize: 30 } }}>
-                    {getMappedIcon(b.icon ?? 'eco')}
+      {/* ============ WHY TRUST ============ */}
+      <Box sx={{ py: { xs: 8, md: 12 }, px: 2 }}>
+        <Container maxWidth="lg">
+          <SectionHead title={whyUs.heading} />
+          <Grid container spacing={3}>
+            {whyUs.items.map((item, i) => (
+              <Grid key={item.title} size={{ xs: 12, sm: 6, md: 3 }}>
+                <Card
+                  elevation={0}
+                  sx={{
+                    height: "100%",
+                    borderRadius: "16px",
+                    overflow: "hidden",
+                    border: `1px solid ${LINE}`,
+                    transition: "all .25s",
+                    "&:hover": {
+                      transform: "translateY(-5px)",
+                      boxShadow: "0 18px 40px rgba(11,37,89,0.14)",
+                    },
+                  }}
+                >
+                  <Box
+                    sx={{
+                      height: 170,
+                      backgroundImage: `url('${WHY_PHOTOS[(i + photoOffset) % WHY_PHOTOS.length]}')`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                    }}
+                  />
+                  <Box sx={{ p: 3 }}>
+                    <Box
+                      sx={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: "12px",
+                        bgcolor: SOFT,
+                        color: BLUE,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        mb: 1.5,
+                        mt: -5.5,
+                        position: "relative",
+                        border: "3px solid #fff",
+                      }}
+                    >
+                      {STAT_ICONS[item.icon] ?? <VerifiedIcon />}
+                    </Box>
+                    <Typography
+                      sx={{ fontWeight: 800, fontSize: "1.15rem", mb: 1, color: NAVY }}
+                    >
+                      {item.title}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: MUTED }}>
+                      {item.description}
+                    </Typography>
                   </Box>
-                  <Typography sx={{ fontWeight: 800, mb: 1 }}>{b.title}</Typography>
-                  <Typography variant="body2" sx={{ color: 'text.secondary', lineHeight: 1.7 }}>{b.description}</Typography>
                 </Card>
               </Grid>
             ))}
@@ -265,90 +849,401 @@ export default function Home() {
         </Container>
       </Box>
 
-      {/* ================= STATS ================= */}
-      <Box sx={{ bgcolor: NAVY, color: 'white', py: { xs: 5, md: 7 } }}>
-        <Container>
-          <Typography component="h2" sx={{ textAlign: 'center', mb: 4, fontSize: { xs: '1.6rem', md: '2.2rem' }, fontWeight: 800 }}>
-            {content['stats.title'] || 'Powering homes across Maharashtra'}
+      {/* ============ ARIHANT PROMISE ============ */}
+      <Box
+        sx={{
+          py: { xs: 8, md: 10 },
+          px: 2,
+          color: "#FFFFFF",
+          backgroundImage: navyOverlay(IMG.panelsSky, 0.9),
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        <Container maxWidth="lg">
+          <Grid container spacing={5} sx={{ alignItems: "center" }}>
+            <Grid size={{ xs: 12, md: 5 }}>
+              <Typography
+                variant="overline"
+                sx={{ color: YELLOW, fontWeight: 800, letterSpacing: "0.2em" }}
+              >
+                Introducing
+              </Typography>
+              <Typography
+                sx={{ fontWeight: 800, fontSize: { xs: "2.2rem", md: "3.2rem" }, lineHeight: 1.1 }}
+              >
+                The Arihant Promise
+              </Typography>
+              <Typography sx={{ mt: 2, fontSize: "1.2rem", opacity: 0.9 }}>
+                A guaranteed solar savings plan, backed in writing.
+              </Typography>
+              <Button
+                component={RouterLink}
+                to="/services"
+                endIcon={<ArrowForwardIcon />}
+                sx={{ ...btn("yellow"), mt: 3 }}
+              >
+                Know More
+              </Button>
+            </Grid>
+            <Grid size={{ xs: 12, md: 7 }}>
+              <Grid container spacing={2}>
+                {TRUST_ITEMS.map((item) => (
+                  <Grid key={item.title} size={{ xs: 12, sm: 6 }}>
+                    <Box
+                      sx={{
+                        p: 2.5,
+                        height: "100%",
+                        borderRadius: "14px",
+                        bgcolor: "rgba(255,255,255,0.1)",
+                        border: "1px solid rgba(255,255,255,0.2)",
+                        backdropFilter: "blur(6px)",
+                      }}
+                    >
+                      <Box sx={{ color: YELLOW, mb: 1 }}>{item.icon}</Box>
+                      <Typography sx={{ fontWeight: 700 }}>{item.title}</Typography>
+                    </Box>
+                  </Grid>
+                ))}
+              </Grid>
+            </Grid>
+          </Grid>
+        </Container>
+      </Box>
+
+      {/* ============ STATS ============ */}
+      <Box sx={{ py: { xs: 7, md: 9 }, px: 2, backgroundColor: NAVY_DEEP }}>
+        <Container maxWidth="lg">
+          <Typography
+            sx={{
+              fontWeight: 800,
+              textAlign: "center",
+              color: "#FFFFFF",
+              mb: 5,
+              fontSize: { xs: "1.6rem", md: "2.2rem" },
+            }}
+          >
+            Rooftop Solar for Homes & Businesses
           </Typography>
           <Grid container spacing={3}>
-            {stats.map((s) => (
-              <Grid size={{ xs: 6, md: 3 }} key={s.label} sx={{ textAlign: 'center' }}>
-                <Typography sx={{ fontSize: { xs: '1.9rem', md: '2.6rem' }, fontWeight: 800, color: YELLOW, lineHeight: 1.1 }}>{s.value}</Typography>
-                <Typography sx={{ mt: 0.5, fontSize: '0.9rem', opacity: 0.85 }}>{s.label}</Typography>
+            {stats.items.map((item, idx) => (
+              <Grid key={`${item.label}-${idx}`} size={{ xs: 6, md: 3 }}>
+                <StatBlock label={item.label} value={item.value} suffix={item.suffix} />
               </Grid>
             ))}
+          </Grid>
+          <Typography sx={{ textAlign: "center", mt: 5, color: "rgba(255,255,255,0.8)" }}>
+            Mainly serving {SITE_INFO.serviceAreas.join(", ")} with rooftop
+            solar, subsidy assistance and ongoing service.
+          </Typography>
+        </Container>
+      </Box>
+
+      {/* ============ CALCULATOR ============ */}
+      <Box
+        id="calculator"
+        sx={{ py: { xs: 8, md: 12 }, px: 2, backgroundColor: SOFT }}
+      >
+        <Container maxWidth="lg">
+          <SectionHead
+            eyebrow="UNLOCK YOUR SOLAR SAVINGS"
+            title="Calculate your savings"
+            sub="Use the monthly amount on your electricity bill to see suitable Solar RTS system options for your home."
+          />
+          <Card
+            elevation={0}
+            sx={{
+              maxWidth: 760,
+              mx: "auto",
+              p: { xs: 3, md: 5 },
+              borderRadius: "20px",
+              boxShadow: "0 18px 50px rgba(11,37,89,0.12)",
+            }}
+          >
+            <Grid container spacing={2.5}>
+              <Grid size={{ xs: 12 }}>
+                <Typography variant="body2" sx={{ fontWeight: 700, mb: 1, color: NAVY }}>
+                  Average monthly electricity bill
+                </Typography>
+                <TextField
+                  fullWidth
+                  value={billInput}
+                  onChange={(e) => {
+                    setBillInput(e.target.value.replace(/[^\d]/g, ""));
+                    setShowRecommendations(false);
+                    setCalcError("");
+                  }}
+                  placeholder="Enter the amount shown on your bill"
+                  slotProps={{
+                    htmlInput: { inputMode: "numeric", "aria-label": "Monthly electricity bill in rupees" },
+                    input: {
+                      startAdornment: (
+                        <Typography sx={{ mr: 1, fontWeight: 700, color: NAVY }}>
+                          ₹
+                        </Typography>
+                      ),
+                    },
+                  }}
+                  sx={fieldSx}
+                />
+                <Typography variant="caption" sx={{ display: "block", mt: 1, color: MUTED }}>
+                  No PIN code needed. Your estimate is based on your electricity bill.
+                </Typography>
+              </Grid>
+            </Grid>
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, my: 2.5 }}>
+              {[1500, 3000, 5000, 10000, 25000].map((preset) => {
+                const on = billInput === String(preset);
+                return (
+                  <Chip
+                    key={preset}
+                    label={`₹${preset.toLocaleString("en-IN")}`}
+                    onClick={() => setBillInput(String(preset))}
+                    sx={{
+                      bgcolor: on ? NAVY : "#FFFFFF",
+                      color: on ? "#FFFFFF" : NAVY,
+                      border: `1px solid ${on ? NAVY : LINE}`,
+                      fontWeight: 700,
+                      "&:hover": { bgcolor: on ? NAVY_DEEP : SOFT },
+                    }}
+                  />
+                );
+              })}
+            </Box>
+            <Button
+              fullWidth
+              size="large"
+              variant="contained"
+              onClick={handleCalculate}
+              endIcon={<ArrowForwardIcon />}
+              sx={{ ...btn("yellow"), py: 1.7 }}
+            >
+              Show my solar recommendations
+            </Button>
+            {calcError && (
+              <Alert severity="error" sx={{ mt: 2 }}>
+                {calcError}
+              </Alert>
+            )}
+          </Card>
+
+          {recommendations.length > 0 && (
+            <Box sx={{ mt: 7 }}>
+              <Box
+                sx={{
+                  maxWidth: 760,
+                  mx: "auto",
+                  mb: 4,
+                  p: { xs: 2.5, md: 3.5 },
+                  borderRadius: "20px 20px 20px 6px",
+                  color: "#FFFFFF",
+                  background: `linear-gradient(125deg, ${NAVY} 0%, ${SKY_DARK} 100%)`,
+                  boxShadow: "0 18px 42px rgba(7,26,46,0.18)",
+                }}
+              >
+                <Typography variant="overline" sx={{ color: "#BAE6FD", fontWeight: 800, letterSpacing: ".12em" }}>
+                  YOUR PERSONAL SOLAR ESTIMATE
+                </Typography>
+                <Typography sx={{ fontWeight: 800, fontSize: { xs: "1.3rem", md: "1.65rem" }, lineHeight: 1.25 }}>
+                  Options for your ₹{billNum.toLocaleString("en-IN")} monthly bill
+                </Typography>
+                <Typography sx={{ mt: 1, color: "rgba(255,255,255,.82)", lineHeight: 1.65 }}>
+                  Compare system sizes, estimated monthly savings, subsidy and indicative payback. Our team can confirm the final design after a rooftop assessment.
+                </Typography>
+              </Box>
+              <Grid container spacing={3} sx={{ justifyContent: "center" }}>
+                {recommendations.map((r) => {
+                  const highlight = r.isRecommended;
+                  return (
+                    <Grid key={r.kw} size={{ xs: 12, sm: 6, md: 4 }}>
+                      <Card
+                        elevation={0}
+                        sx={{
+                          p: 3,
+                          height: "100%",
+                          display: "flex",
+                          flexDirection: "column",
+                          borderRadius: highlight ? "24px 24px 24px 8px" : "18px",
+                          position: "relative",
+                          overflow: "hidden",
+                          border: `1px solid ${highlight ? SKY_DARK : LINE}`,
+                          boxShadow: highlight ? "0 18px 44px rgba(3,105,161,0.18)" : "0 8px 24px rgba(11,37,64,0.06)",
+                          background: highlight ? "linear-gradient(180deg, #F0F9FF 0%, #FFFFFF 42%)" : "#FFFFFF",
+                        }}
+                      >
+                        {highlight && (
+                          <Box
+                            sx={{
+                              mx: -3,
+                              mt: -3,
+                              mb: 2,
+                              px: 3,
+                              py: 1,
+                              color: NAVY,
+                              background: "linear-gradient(90deg, #BAE6FD, #E0F2FE)",
+                              fontSize: ".77rem",
+                              fontWeight: 800,
+                              letterSpacing: ".08em",
+                              textTransform: "uppercase",
+                            }}
+                          >
+                            Best fit for your bill
+                          </Box>
+                        )}
+                        <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", mb: 1 }}>
+                          <Box sx={{ display: "grid", placeItems: "center", width: 46, height: 46, borderRadius: "15px 15px 15px 5px", bgcolor: SKY_LIGHT, color: SKY_DARK }}>
+                            <SolarPowerIcon />
+                          </Box>
+                          <Typography sx={{ fontWeight: 800, fontSize: "1.5rem", color: NAVY }}>
+                          {r.kw} kW System
+                          </Typography>
+                        </Stack>
+                        <Typography variant="body2" sx={{ color: MUTED, mb: 2 }}>
+                          Estimated fit for your household usage
+                        </Typography>
+                        <Stack spacing={1.2} sx={{ mb: 3, flexGrow: 1 }}>
+                          {[
+                            ["Monthly Savings", `₹${r.monthlySavings.toLocaleString("en-IN")}`],
+                            ["Estimated system cost", `₹${r.systemCost.toLocaleString("en-IN")}`],
+                            ["Indicative subsidy", `₹${r.subsidy.toLocaleString("en-IN")}`],
+                            ["Estimated net cost", `₹${r.netCost.toLocaleString("en-IN")}`],
+                            ["Indicative payback", `${r.paybackYears} years`],
+                          ].map(([k, v]) => (
+                            <Box key={k} sx={{ display: "flex", justifyContent: "space-between", gap: 1, borderBottom: `1px solid ${LINE}`, pb: 1 }}>
+                              <Typography variant="body2" sx={{ color: MUTED }}>
+                                {k}
+                              </Typography>
+                              <Typography variant="body2" sx={{ fontWeight: 800, color: NAVY }}>
+                                {v}
+                              </Typography>
+                            </Box>
+                          ))}
+                        </Stack>
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          onClick={() => {
+                            setLeadBill(String(billNum));
+                            scrollTo("lead-form");
+                          }}
+                          sx={btn(highlight ? "sky" : "navy")}
+                        >
+                          Request a site assessment
+                        </Button>
+                      </Card>
+                    </Grid>
+                  );
+                })}
+              </Grid>
+              <Typography variant="caption" sx={{ display: "block", textAlign: "center", mt: 2.5, color: MUTED, lineHeight: 1.6 }}>
+                Estimates are indicative and depend on your rooftop, usage, tariff and current subsidy eligibility. Arihant Electricals will confirm the system and pricing after a free site assessment.
+              </Typography>
+            </Box>
+          )}
+        </Container>
+      </Box>
+
+      {/* ============ SEE SOLAR BEFORE YOU BUY ============ */}
+      <Box sx={{ py: { xs: 8, md: 12 }, px: 2 }}>
+        <Container maxWidth="lg">
+          <Grid container spacing={6} sx={{ alignItems: "center" }}>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Typography variant="overline" sx={{ color: BLUE, fontWeight: 800, letterSpacing: "0.18em" }}>
+                EXPERIENCE IT LIVE
+              </Typography>
+              <Typography
+                sx={{ fontWeight: 800, color: NAVY, fontSize: { xs: "1.9rem", md: "2.8rem" }, lineHeight: 1.1, mb: 2 }}
+              >
+                See Solar Before You Buy.
+              </Typography>
+              <Typography sx={{ color: MUTED, mb: 3, fontSize: "1.05rem" }}>
+                See our WindPro Mount™ setup, understand savings, and clear
+                every doubt — in one visit.
+              </Typography>
+              <Stack spacing={1.5} sx={{ mb: 4 }}>
+                {[
+                  "See our live solar setup in action",
+                  "Get a Free 3D Design for Your Home",
+                  "See how maintenance impacts performance",
+                  "Understand your savings, financing options and payback",
+                ].map((line) => (
+                  <Box key={line} sx={{ display: "flex", gap: 1.5, alignItems: "flex-start" }}>
+                    <CheckCircleIcon sx={{ color: BLUE, fontSize: 22 }} />
+                    <Typography>{line}</Typography>
+                  </Box>
+                ))}
+              </Stack>
+              <Button
+                component={RouterLink}
+                to="/contact"
+                endIcon={<ArrowForwardIcon />}
+                sx={btn("navy")}
+              >
+                Book My Visit
+              </Button>
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Box
+                sx={{
+                  borderRadius: "24px",
+                  minHeight: { xs: 300, md: 440 },
+                  backgroundImage: `linear-gradient(180deg, rgba(7,26,64,0.02) 25%, rgba(7,26,64,0.72) 100%), url('${featuredInstallPhoto}')`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  display: "flex",
+                  alignItems: "flex-end",
+                  p: 3.5,
+                  color: "#FFFFFF",
+                  boxShadow: "0 24px 60px rgba(11,37,89,0.25)",
+                }}
+              >
+                <Box>
+                  <Typography sx={{ fontWeight: 800, fontSize: "1.4rem" }}>
+                    Professional rooftop installation
+                  </Typography>
+                  <Typography variant="body2" sx={{ opacity: 0.92 }}>
+                    Carefully planned Solar RTS installation with secure rooftop mounting.
+                  </Typography>
+                </Box>
+              </Box>
+            </Grid>
           </Grid>
         </Container>
       </Box>
 
-      {/* ================= CALCULATOR ================= */}
-      <Box component="section" id="calculator" sx={{ py: { xs: 8, md: 11 }, bgcolor: 'action.hover' }}>
-        <Container>
-          <SectionTitle
-            eyebrow={content['calculator.eyebrow'] || 'UNLOCK YOUR SOLAR SAVINGS'}
-            title={content['calculator.title'] || 'Calculate your savings'}
-            subtitle={content['calculator.subtitle'] || 'Slide to your average monthly electricity bill for an indicative system size and savings.'}
-          />
-          <Card sx={{ p: { xs: 3, md: 5 }, maxWidth: 980, mx: 'auto' }}>
-            <Grid container spacing={{ xs: 3, md: 6 }} sx={{ alignItems: 'center' }}>
-              <Grid size={{ xs: 12, md: 5 }}>
-                <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 600 }}>Monthly electricity bill</Typography>
-                <Typography sx={{ fontSize: '2.6rem', fontWeight: 800, color: 'primary.main', mb: 1 }}>₹{bill.toLocaleString('en-IN')}</Typography>
-                <Slider value={bill} min={1000} max={30000} step={500} onChange={(_, v) => setBill(v as number)} aria-label="Monthly electricity bill" />
-                <Stack direction="row" sx={{ justifyContent: 'space-between' }}>
-                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>₹1,000</Typography>
-                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>₹30,000</Typography>
-                </Stack>
-                <Typography variant="caption" sx={{ display: 'block', mt: 2, color: 'text.secondary' }}>
-                  Tip: use a 12-month average of your bills.
-                </Typography>
-              </Grid>
-              <Grid size={{ xs: 12, md: 7 }}>
-                <Grid container spacing={1.5}>
-                  {[
-                    { label: 'Recommended system', value: `${result.systemKw} kW` },
-                    { label: 'Govt. subsidy', value: `₹${result.subsidy.toLocaleString('en-IN')}` },
-                    { label: 'Monthly savings', value: `₹${result.monthlySaving.toLocaleString('en-IN')}` },
-                    { label: 'Yearly savings', value: `₹${result.yearlySaving.toLocaleString('en-IN')}` },
-                    { label: 'Cost after subsidy', value: `₹${result.finalCost.toLocaleString('en-IN')}` },
-                    { label: 'Payback', value: result.payback === '—' ? '—' : `${result.payback} yrs` },
-                  ].map((r) => (
-                    <Grid size={{ xs: 6 }} key={r.label}>
-                      <Box sx={{ p: 2, borderRadius: 3, bgcolor: 'action.hover', textAlign: 'center' }}>
-                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>{r.label}</Typography>
-                        <Typography sx={{ fontWeight: 800, fontSize: { xs: '1.1rem', md: '1.35rem' } }}>{r.value}</Typography>
-                      </Box>
-                    </Grid>
-                  ))}
-                </Grid>
-                <Button href="#get-quote" variant="contained" fullWidth endIcon={<ArrowForward />} sx={{ ...ctaBtn, mt: 2.5 }}>
-                  Get my exact quote
-                </Button>
-                <Typography variant="caption" sx={{ display: 'block', mt: 1.5, color: 'text.secondary' }}>
-                  Estimates are indicative; final figures are confirmed after a free site survey.
-                </Typography>
-              </Grid>
-            </Grid>
-          </Card>
-        </Container>
-      </Box>
-
-      {/* ================= PROCESS ================= */}
-      <Box component="section" sx={{ py: { xs: 8, md: 11 } }}>
-        <Container>
-          <SectionTitle
-            eyebrow={content['steps.eyebrow'] || 'YOUR SOLAR JOURNEY'}
-            title={content['steps.title'] || 'We handle everything. You just save.'}
-            subtitle={content['steps.subtitle'] || ''}
-          />
-          <Grid container spacing={2.5}>
-            {steps.map((step, i) => (
-              <Grid size={{ xs: 12, sm: 6, md: 3 }} key={step.title}>
-                <Card component={motion.div} variants={reveal} initial="hidden" whileInView="visible" viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.45 }} sx={{ height: '100%', p: 3 }}>
-                  <Avatar sx={{ mb: 2, bgcolor: 'primary.main', color: 'primary.contrastText', fontWeight: 800 }}>{i + 1}</Avatar>
-                  <Typography sx={{ fontWeight: 800, mb: 1 }}>{step.title}</Typography>
-                  <Typography variant="body2" sx={{ color: 'text.secondary', lineHeight: 1.7 }}>{step.desc}</Typography>
+      {/* ============ WE HANDLE EVERYTHING ============ */}
+      <Box sx={{ py: { xs: 8, md: 12 }, px: 2, backgroundColor: SOFT }}>
+        <Container maxWidth="lg">
+          <SectionHead title="We Handle Everything. You Just Save." />
+          <Grid container spacing={3}>
+            {HANDLE_STEPS.map((s, i) => (
+              <Grid key={s.title} size={{ xs: 12, sm: 6, md: 3 }}>
+                <Card
+                  elevation={0}
+                  sx={{ p: 3.5, height: "100%", borderRadius: "18px", border: `1px solid ${LINE}` }}
+                >
+                  <Box
+                    sx={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: "50%",
+                      bgcolor: YELLOW,
+                      color: INK,
+                      fontWeight: 800,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      mb: 2,
+                    }}
+                  >
+                    {i + 1}
+                  </Box>
+                  <Typography sx={{ fontWeight: 800, color: NAVY, mb: 1 }}>
+                    {s.title}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: MUTED }}>
+                    {s.desc}
+                  </Typography>
                 </Card>
               </Grid>
             ))}
@@ -356,193 +1251,264 @@ export default function Home() {
         </Container>
       </Box>
 
-      {/* ================= SERVICES ================= */}
-      {activeServices.length > 0 && (
-        <Box component="section" sx={{ py: { xs: 8, md: 11 }, bgcolor: 'action.hover' }}>
-          <Container>
-            <SectionTitle
-              eyebrow={content['services.eyebrow'] || 'OUR SERVICES'}
-              title={content['services.title'] || 'Everything you need to make the switch.'}
-              subtitle={content['services.subtitle'] || ''}
-            />
-            <Grid container spacing={2.5}>
-              {activeServices.map((s, i) => (
-                <Grid size={{ xs: 12, md: 4 }} key={s.id}>
-                  <Card component={motion.div} variants={reveal} initial="hidden" whileInView="visible" viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.45 }} sx={{ height: '100%', overflow: 'hidden' }}>
-                    {s.image_url && <Box component="img" src={s.image_url} alt={s.title} loading="lazy" sx={{ display: 'block', width: '100%', height: 190, objectFit: 'cover' }} />}
-                    <CardContent sx={{ p: 3 }}>
-                      <Stack direction="row" spacing={1.2} sx={{ alignItems: 'center', mb: 1 }}>
-                        <Box sx={{ color: 'primary.main', display: 'flex' }}>{getMappedIcon(s.icon ?? 'solar_power')}</Box>
-                        <Typography component="h3" sx={{ fontSize: '1.15rem', fontWeight: 800 }}>{s.title}</Typography>
-                      </Stack>
-                      <Typography variant="body2" sx={{ mb: 1.5, color: 'text.secondary', lineHeight: 1.7 }}>{s.short_description}</Typography>
-                      {s.features?.slice(0, 3).map((f) => (
-                        <FeatureLine key={f}>{f}</FeatureLine>
-                      ))}
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))}
+      {/* ============ MONITORING APP ============ */}
+      <Box sx={{ py: { xs: 8, md: 12 }, px: 2, backgroundColor: NAVY, color: "#FFFFFF" }}>
+        <Container maxWidth="lg">
+          <Grid container spacing={6} sx={{ alignItems: "center" }}>
+            <Grid size={{ xs: 12, md: 6 }} sx={{ display: "flex", justifyContent: "center" }}>
+              <Box
+                sx={{
+                  width: 220,
+                  height: 420,
+                  borderRadius: "36px",
+                  bgcolor: NAVY_DEEP,
+                  border: "8px solid #0A0F1F",
+                  p: 2.5,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  boxShadow: "0 30px 70px rgba(0,0,0,0.45)",
+                }}
+              >
+                <Box>
+                  <Typography variant="caption" sx={{ opacity: 0.7, fontWeight: 600 }}>
+                    Arihant Solar
+                  </Typography>
+                  <Typography sx={{ color: YELLOW, fontWeight: 800, fontSize: "2.2rem" }}>
+                    24.6 kW
+                  </Typography>
+                  <Typography variant="caption" sx={{ opacity: 0.7 }}>
+                    Today's generation
+                  </Typography>
+                </Box>
+                <Box>
+                  <Box
+                    sx={{
+                      height: 90,
+                      borderRadius: 2,
+                      mb: 1.5,
+                      background: `linear-gradient(180deg, ${YELLOW}99, ${YELLOW}0D)`,
+                    }}
+                  />
+                  <Typography variant="caption" sx={{ opacity: 0.7 }}>
+                    Savings this month
+                  </Typography>
+                  <Typography sx={{ fontWeight: 800, fontSize: "1.4rem" }}>₹6,240</Typography>
+                </Box>
+              </Box>
             </Grid>
-            <Box sx={{ mt: 3.5, textAlign: 'center' }}>
-              <Button component={RouterLink} to="/services" endIcon={<ArrowForward />} sx={{ fontWeight: 800 }}>Explore all services</Button>
-            </Box>
-          </Container>
-        </Box>
-      )}
-
-      {/* ================= PLANS ================= */}
-      {activePlans.length > 0 && (
-        <Box component="section" sx={{ py: { xs: 8, md: 11 } }}>
-          <Container>
-            <SectionTitle
-              eyebrow={content['pricing.eyebrow'] || 'CLEAR PRICING'}
-              title={content['pricing.title'] || 'See what going solar could look like.'}
-              subtitle={content['pricing.subtitle'] || 'Popular system sizes with subsidy and savings.'}
-            />
-            <Grid container spacing={2.5}>
-              {activePlans.map((p, i) => (
-                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={p.id}>
-                  <Card component={motion.div} variants={reveal} initial="hidden" whileInView="visible" viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.45 }} sx={{ position: 'relative', height: '100%', border: '2px solid', borderColor: p.is_popular ? 'primary.main' : 'divider' }}>
-                    {p.is_popular && <Chip label="MOST CHOSEN" size="small" sx={{ position: 'absolute', top: 16, right: 16, bgcolor: YELLOW, color: NAVY, fontWeight: 800 }} />}
-                    <CardContent sx={{ p: { xs: 3, md: 3.5 } }}>
-                      <Typography sx={{ color: 'text.secondary', fontSize: '0.74rem', fontWeight: 800, letterSpacing: '0.12em' }}>{p.system_type?.toUpperCase() || 'ON-GRID'}</Typography>
-                      <Typography sx={{ mt: 0.5, fontSize: '2.1rem', fontWeight: 800 }}>{p.kw} kW</Typography>
-                      <Box sx={{ my: 2, pb: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
-                        <Typography variant="body2" sx={{ color: 'text.secondary', textDecoration: 'line-through' }}>₹{p.total_cost.toLocaleString('en-IN')}</Typography>
-                        <Typography sx={{ color: 'primary.main', fontSize: '2rem', fontWeight: 800, lineHeight: 1.2 }}>₹{p.final_cost.toLocaleString('en-IN')}</Typography>
-                        <Typography variant="body2" sx={{ mt: 0.5, fontWeight: 700, color: 'success.main' }}>After ₹{p.subsidy_amount.toLocaleString('en-IN')} subsidy</Typography>
-                      </Box>
-                      <Stack spacing={1} sx={{ mb: 3 }}>
-                        {p.monthly_savings && <FeatureLine>Save ₹{p.monthly_savings.toLocaleString('en-IN')} / month</FeatureLine>}
-                        {p.panels_count && <FeatureLine>{p.panels_count} solar panels</FeatureLine>}
-                        {p.area_required && <FeatureLine>Roof area: {p.area_required}</FeatureLine>}
-                      </Stack>
-                      <Button href="#get-quote" fullWidth variant={p.is_popular ? 'contained' : 'outlined'} sx={{ py: 1.2 }}>Get a tailored quote</Button>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))}
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Typography variant="overline" sx={{ color: YELLOW, fontWeight: 800, letterSpacing: "0.18em" }}>
+                REAL-TIME MONITORING APP
+              </Typography>
+              <Typography sx={{ fontWeight: 800, fontSize: { xs: "1.8rem", md: "2.6rem" }, lineHeight: 1.12, mb: 1 }}>
+                Track the performance of your solar system — anywhere, anytime.
+              </Typography>
+              <Stack spacing={2.5} sx={{ mt: 4 }}>
+                {[
+                  { icon: <BoltIcon />, title: "Track your power generation" },
+                  { icon: <VerifiedIcon />, title: "Get 100% visibility on your savings" },
+                  { icon: <PhoneIphoneIcon />, title: "Track your referrals & rewards on the go" },
+                  { icon: <ShieldIcon />, title: "Full transparency on promised vs. actual generation" },
+                ].map((f) => (
+                  <Box key={f.title} sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+                    <Box
+                      sx={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: "12px",
+                        bgcolor: "rgba(255,255,255,0.1)",
+                        color: YELLOW,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {f.icon}
+                    </Box>
+                    <Typography sx={{ fontWeight: 600 }}>{f.title}</Typography>
+                  </Box>
+                ))}
+              </Stack>
             </Grid>
-            <Box sx={{ mt: 3, textAlign: 'center' }}>
-              <Button component={RouterLink} to="/pricing" endIcon={<ArrowForward />} sx={{ fontWeight: 800 }}>See all system options</Button>
-            </Box>
-          </Container>
-        </Box>
-      )}
+          </Grid>
+        </Container>
+      </Box>
 
-      {/* ================= TESTIMONIALS ================= */}
-      {activeTestimonials.length > 0 && (
-        <Box component="section" sx={{ py: { xs: 8, md: 10 }, bgcolor: 'action.hover' }}>
-          <Container>
-            <SectionTitle
-              eyebrow={content['testimonials.eyebrow'] || 'FROM OUR CUSTOMERS'}
-              title={content['testimonials.title'] || 'Our customers love their savings'}
-              subtitle={content['testimonials.subtitle'] || ''}
-            />
-            <Grid container spacing={2.5}>
-              {activeTestimonials.map((t, i) => (
-                <Grid size={{ xs: 12, md: 4 }} key={t.id}>
-                  <Card component={motion.div} variants={reveal} initial="hidden" whileInView="visible" viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.45 }} sx={{ height: '100%' }}>
-                    <CardContent sx={{ p: 3 }}>
-                      <Stack direction="row" spacing={0.3} sx={{ mb: 2 }}>
-                        {Array.from({ length: t.rating }).map((_, s) => <Star key={s} sx={{ color: '#D8A633', fontSize: 18 }} />)}
-                      </Stack>
-                      <Typography sx={{ mb: 3, color: 'text.secondary', lineHeight: 1.8 }}>“{t.message}”</Typography>
-                      <Stack direction="row" spacing={1.3} sx={{ alignItems: 'center' }}>
-                        <Avatar src={t.image_url || undefined} alt={t.name} sx={{ bgcolor: 'primary.main', width: 42, height: 42 }}>{t.name.charAt(0)}</Avatar>
-                        <Box>
-                          <Typography variant="body2" sx={{ fontWeight: 800 }}>{t.name}</Typography>
-                          <Typography variant="caption" sx={{ color: 'text.secondary' }}>{t.location}</Typography>
-                        </Box>
-                      </Stack>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
-          </Container>
-        </Box>
-      )}
+      {/* ============ TESTIMONIALS ============ */}
+      <Box sx={{ py: { xs: 8, md: 12 }, px: 2 }}>
+        <Container maxWidth="lg">
+          <SectionHead title={testimonials.heading} />
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              gap: 1.5,
+              justifyContent: "center",
+              alignItems: "center",
+              mt: -3,
+              mb: 5,
+            }}
+          >
+            <Typography sx={{ fontWeight: 800, fontSize: "2.6rem", color: NAVY }}>
+              {testimonials.googleRating}
+            </Typography>
+            <Rating value={testimonials.googleRating} precision={0.1} readOnly />
+            <Typography variant="body2" sx={{ color: MUTED }}>
+              Rated {testimonials.googleRating} on Google with{" "}
+              {testimonials.googleReviews.toLocaleString("en-IN")}+ ratings
+            </Typography>
+          </Box>
+          <Grid container spacing={3}>
+            {testimonials.items.map((t) => (
+              <Grid key={t.name} size={{ xs: 12, md: 4 }}>
+                <Card
+                  elevation={0}
+                  sx={{
+                    p: 3.5,
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    borderRadius: "18px",
+                    border: `1px solid ${LINE}`,
+                    backgroundColor: SOFT,
+                  }}
+                >
+                  <Typography sx={{ fontSize: "3rem", lineHeight: 0.6, color: YELLOW, fontWeight: 900 }}>
+                    “
+                  </Typography>
+                  <Typography sx={{ mt: 1, mb: 3, flexGrow: 1, color: INK }}>
+                    {t.quote}
+                  </Typography>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                    <Avatar src={t.avatarUrl || undefined} sx={{ bgcolor: NAVY, fontWeight: 700 }}>
+                      {t.name.charAt(0)}
+                    </Avatar>
+                    <Box>
+                      <Typography sx={{ fontWeight: 800 }}>{t.name}</Typography>
+                      <Typography variant="caption" sx={{ color: MUTED }}>
+                        {t.location}
+                      </Typography>
+                    </Box>
+                    <Rating value={t.rating} readOnly size="small" sx={{ ml: "auto" }} />
+                  </Box>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
+      </Box>
 
-      {/* ================= FAQ ================= */}
-      <Box component="section" sx={{ py: { xs: 8, md: 11 } }}>
+      {/* ============ FAQ ============ */}
+      <Box sx={{ py: { xs: 8, md: 12 }, px: 2, backgroundColor: SOFT }}>
         <Container maxWidth="md">
-          <SectionTitle eyebrow="FAQ" title={content['faq.title'] || 'All your questions, answered.'} subtitle="" />
-          {FAQS.map((f, i) => (
-            <Accordion key={f.q} disableGutters defaultExpanded={i === 0} sx={{ mb: 1.2, borderRadius: '14px !important', '&::before': { display: 'none' }, border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
-              <AccordionSummary expandIcon={<ExpandMore />} sx={{ px: 2.5 }}>
-                <Typography sx={{ fontWeight: 700 }}>{content[`faq.${i + 1}.q`] || f.q}</Typography>
+          <SectionHead eyebrow="FREQUENTLY ASKED QUESTIONS" title={faq.heading} />
+          {faq.items.map((item, idx) => (
+            <Accordion
+              key={`${item.question}-${idx}`}
+              elevation={0}
+              disableGutters
+              sx={{
+                mb: 1.5,
+                borderRadius: "14px !important",
+                border: `1px solid ${LINE}`,
+                "&:before": { display: "none" },
+              }}
+            >
+              <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ color: NAVY }} />} sx={{ px: 3, py: 0.5 }}>
+                <Typography sx={{ fontWeight: 700, color: NAVY }}>{item.question}</Typography>
               </AccordionSummary>
-              <AccordionDetails sx={{ px: 2.5, pb: 2.5 }}>
-                <Typography variant="body2" sx={{ color: 'text.secondary', lineHeight: 1.8 }}>{content[`faq.${i + 1}.a`] || f.a}</Typography>
+              <AccordionDetails sx={{ px: 3, pb: 3 }}>
+                <Typography sx={{ color: MUTED }}>{item.answer}</Typography>
               </AccordionDetails>
             </Accordion>
           ))}
         </Container>
       </Box>
 
-      {/* ================= LEAD FORM ================= */}
-      <Box id="get-quote" component="section" sx={{ py: { xs: 8, md: 10 }, background: `linear-gradient(135deg, ${NAVY} 0%, #14507F 100%)`, color: 'white', scrollMarginTop: 80 }}>
-        <Container>
-          <Grid container spacing={{ xs: 4, md: 8 }} sx={{ alignItems: 'center' }}>
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Typography component="h2" sx={{ mb: 2, fontSize: { xs: '2rem', md: '2.8rem' }, fontWeight: 800, lineHeight: 1.15 }}>
-                {content['cta.title'] || 'Talk to a solar expert'}
+      {/* ============ TALK TO A SOLAR EXPERT ============ */}
+      <Box
+        id="lead-form"
+        sx={{
+          py: { xs: 8, md: 12 },
+          px: 2,
+          backgroundImage: navyOverlay(IMG.fieldPanels, 0.9),
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        <Container maxWidth="lg">
+          <Grid container spacing={6} sx={{ alignItems: "center" }}>
+            <Grid size={{ xs: 12, md: 6 }} sx={{ color: "#FFFFFF" }}>
+              <Typography sx={{ fontWeight: 800, fontSize: { xs: "2rem", md: "3rem" }, lineHeight: 1.1 }}>
+                Talk to a Solar Expert
               </Typography>
-              <Typography sx={{ mb: 3, color: 'rgba(255,255,255,.82)', lineHeight: 1.75 }}>
-                {content['cta.subtitle'] || 'Cut your electricity bill by switching to solar. Share your details and our team will call you back.'}
+              <Typography sx={{ mt: 2, fontSize: "1.2rem", opacity: 0.9 }}>
+                Save up to 90% on electricity bills by switching to solar now.
               </Typography>
-              <Button href={`tel:${phone.replace(/\s/g, '')}`} variant="outlined" sx={{ color: 'white', borderColor: 'rgba(255,255,255,.7)', borderRadius: '10px', py: 1.3, px: 3 }}>
-                Call {phone}
-              </Button>
+              <Stack spacing={1.5} sx={{ mt: 4 }}>
+                {["Free rooftop inspection & 3D design", "Subsidy paperwork handled end-to-end", "5-year free annual maintenance"].map((l) => (
+                  <Box key={l} sx={{ display: "flex", gap: 1.5 }}>
+                    <CheckCircleIcon sx={{ color: YELLOW }} />
+                    <Typography>{l}</Typography>
+                  </Box>
+                ))}
+              </Stack>
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
-              <Card sx={{ p: { xs: 3, md: 4 }, color: 'text.primary' }}>
-                {sent ? (
-                  <Alert severity="success">Thank you! Our team will contact you shortly.</Alert>
-                ) : (
-                  <Box component="form" onSubmit={submitLead} noValidate>
-                    <Stack spacing={2}>
-                      <TextField label="Full name" value={form.name} onChange={setField('name')} required fullWidth />
-                      <TextField
-                        label="WhatsApp number"
-                        value={form.phone}
-                        onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }))}
-                        required
-                        fullWidth
-                        slotProps={{ input: { startAdornment: <InputAdornment position="start">+91</InputAdornment> }, htmlInput: { inputMode: 'numeric' } }}
-                      />
-                      <TextField select label="Monthly electricity bill" value={form.bill} onChange={setField('bill')} required fullWidth>
-                        {BILL_RANGES.map((r) => <MenuItem key={r} value={r}>{r}</MenuItem>)}
-                      </TextField>
-                      <TextField
-                        label="PIN code (optional)"
-                        value={form.pincode}
-                        onChange={(e) => setForm((f) => ({ ...f, pincode: e.target.value.replace(/\D/g, '').slice(0, 6) }))}
-                        fullWidth
-                        slotProps={{ htmlInput: { inputMode: 'numeric' } }}
-                      />
-                      <Button type="submit" variant="contained" size="large" disabled={sending} startIcon={sending ? <CircularProgress size={18} color="inherit" /> : undefined} sx={ctaBtn}>
-                        {sending ? 'Submitting…' : 'Submit details'}
-                      </Button>
-                    </Stack>
-                  </Box>
-                )}
+              <Card elevation={0} sx={{ p: { xs: 3, md: 4 }, borderRadius: "20px", boxShadow: "0 30px 70px rgba(0,0,0,0.35)" }}>
+                <Stack spacing={2}>
+                  <TextField fullWidth label="Full Name" value={leadName} onChange={(e) => setLeadName(e.target.value)} sx={fieldSx} />
+                  <TextField
+                    fullWidth
+                    label="WhatsApp Number"
+                    value={leadPhone}
+                    onChange={(e) => setLeadPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                    slotProps={{ htmlInput: { maxLength: 10, inputMode: "numeric" } }}
+                    sx={fieldSx}
+                  />
+                  <TextField
+                    select
+                    fullWidth
+                    label="Monthly Electricity Bill"
+                    value={leadBillRange}
+                    onChange={(e) => setLeadBillRange(e.target.value)}
+                    sx={fieldSx}
+                  >
+                    {BILL_RANGES.map((r) => (
+                      <MenuItem key={r} value={r}>
+                        {r}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                  <Button
+                    fullWidth
+                    size="large"
+                    variant="contained"
+                    onClick={() => void handleLeadSubmit()}
+                    disabled={leadLoading}
+                    sx={{ ...btn("yellow"), py: 1.7 }}
+                  >
+                    {leadLoading ? <CircularProgress size={22} sx={{ color: NAVY }} /> : "Submit Details"}
+                  </Button>
+                </Stack>
               </Card>
             </Grid>
           </Grid>
         </Container>
       </Box>
-    </Box>
-  );
-}
 
-function FeatureLine({ children }: { children: ReactNode }) {
-  return (
-    <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-      <CheckCircle sx={{ color: 'success.main', fontSize: 18 }} />
-      <Typography variant="body2" sx={{ color: 'text.secondary' }}>{children}</Typography>
-    </Stack>
+      <Snackbar
+        open={Boolean(toast)}
+        autoHideDuration={4000}
+        onClose={() => setToast("")}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert severity={toastSeverity} onClose={() => setToast("")} variant="filled">
+          {toast}
+        </Alert>
+      </Snackbar>
+    </Box>
   );
 }

@@ -1,208 +1,264 @@
-import { Box, Container, Grid, Typography, Card, CardContent, Stack, Button, Chip, CircularProgress } from '@mui/material';
-import { motion } from 'framer-motion';
-import { Link as RouterLink } from 'react-router-dom';
-import { CheckCircle, ArrowForward, Phone } from '@mui/icons-material';
-import { useServices } from '../hooks/useServices';
-import { useSettings } from '../hooks/useSettings';
-import { useContent } from '../hooks/useContent';
-import { BRAND, SHADOW } from '@/constants/Brand';
-import { getMappedIcon } from '../utils/IconMapping';
+import { Link as RouterLink } from "react-router-dom";
+import {
+  Box,
+  Container,
+  Typography,
+  Button,
+  Card,
+  Grid,
+  Stack,
+  Chip,
+} from "@mui/material";
+import DesignServicesIcon from "@mui/icons-material/DesignServices";
+import HandymanIcon from "@mui/icons-material/Handyman";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
+import SupportAgentIcon from "@mui/icons-material/SupportAgent";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import type { ReactElement } from "react";
+import { SITE_INFO } from "../config/SiteInfo";
+import {
+  BLUE,
+  CtaBand,
+  FONT,
+  IMG,
+  INK,
+  LINE,
+  MUTED,
+  NAVY,
+  PageHero,
+  SOFT,
+  YELLOW,
+  SectionHead,
+  btn,
+} from "./SolarTheme";
+
+interface ServiceItem {
+  icon: ReactElement;
+  title: string;
+  description: string;
+  features: string[];
+  image: string;
+}
+
+const SERVICES: ServiceItem[] = [
+  {
+    icon: <DesignServicesIcon sx={{ fontSize: 30 }} />,
+    title: "Rooftop Inspection & 3D Design",
+    description:
+      "Our solar consultants visit your site, evaluate roof type, structural strength, and ideal tilt angle — then deliver a personalised 3D rooftop design within 30 minutes of inspection.",
+    features: [
+      "Free rooftop inspection",
+      "3D model of your home with solar layout",
+      "Shadow analysis for optimal placement",
+      "Structural strength assessment",
+    ],
+    image: IMG.heroRooftop,
+  },
+  {
+    icon: <HandymanIcon sx={{ fontSize: 30 }} />,
+    title: "Residential Solar Installation",
+    description:
+      "Seamless installation with strong, chemically anchored mounting structures. Our WindPro Mount™ is tested for 170 kmph storms.",
+    features: [
+      "1-day installation after design approval",
+      "WindPro Mount™ storm-proof structure",
+      "Non-penetrating, waterproof solutions",
+      "Complete AC/DC cabling and earthing",
+    ],
+    image: IMG.installers,
+  },
+  {
+    icon: <AccountBalanceIcon sx={{ fontSize: 30 }} />,
+    title: "Easy Financing & Subsidy",
+    description:
+      "We handle the entire subsidy process from application to disbursement. Flexible EMI options with collateral-free loans from partner banks.",
+    features: [
+      "Up to ₹78,000 government subsidy",
+      "10-minute hassle-free loan approval",
+      "Interest-free 6-month EMI",
+      "5-year EMI in 60 easy installments",
+    ],
+    image: IMG.society,
+  },
+  {
+    icon: <SupportAgentIcon sx={{ fontSize: 30 }} />,
+    title: "Annual Maintenance Contract",
+    description:
+      "Free 5-year annual maintenance contract with every installation. Proactive quarterly cleaning and preventive maintenance for steady performance.",
+    features: [
+      "Quarterly panel cleaning",
+      "Preventive and corrective maintenance",
+      "Generation efficiency monitoring",
+      "Real-time app-based tracking",
+    ],
+    image: IMG.closeUp,
+  },
+];
+
+const PROCESS_STEPS = [
+  { step: "1", title: "Free Consultation", description: "Share your electricity bill and pincode. Our team evaluates your requirement." },
+  { step: "2", title: "Site Inspection", description: "Our consultant visits your rooftop and prepares a 3D solar design." },
+  { step: "3", title: "Design Approval", description: "You review and approve the 3D design, system size, and financing plan." },
+  { step: "4", title: "Installation", description: "Complete installation in 1 day with storm-proof mounting structures." },
+  { step: "5", title: "Subsidy & Handover", description: "We process your subsidy and hand over the monitoring app access." },
+];
 
 export default function Services() {
-  const { services, loading } = useServices();
-  const { settings } = useSettings();
-  const { content } = useContent('services');
-
   return (
-    <Box>
-      <Box
-        sx={{
-          background: `linear-gradient(135deg, rgba(9,39,71,.92), rgba(23,101,179,.72)), url("${content['hero.image'] || 'https://images.pexels.com/photos/356036/pexels-photo-356036.jpeg?auto=compress&cs=tinysrgb&w=2000'}") center/cover`,
-          color: 'white',
-          py: { xs: 8, md: 12 },
-          textAlign: 'center',
-        }}
+    <Box sx={{ fontFamily: FONT, backgroundColor: "#FFFFFF", color: INK }}>
+      <PageHero
+        eyebrow="OUR SERVICES"
+        title="End-to-end solar solutions. Zero middlemen."
+        sub="From rooftop inspection to installation, subsidy and maintenance — we handle everything so you just save."
+        image={IMG.installers}
       >
-        <Container>
-          <Typography
-            variant="h2"
-            sx={{
-              fontWeight: 800,
-              fontSize: { xs: '2rem', md: '3rem' },
-              mb: 2,
-              letterSpacing: '-0.02em',
-            }}
-          >
-            {content['hero.title'] || 'Solar support, start to finish.'}
-          </Typography>
-          <Typography variant="h6" sx={{ fontWeight: 400, opacity: 0.9, maxWidth: 720, mx: 'auto' }}>
-            {content['hero.subtitle'] || 'Explore the services that make planning, installing, and managing your rooftop solar system easier.'}
-          </Typography>
-        </Container>
-      </Box>
+        <Button
+          component={RouterLink}
+          to="/contact"
+          size="large"
+          variant="contained"
+          endIcon={<ArrowForwardIcon />}
+          sx={btn("yellow")}
+        >
+          Get Free Quote
+        </Button>
+      </PageHero>
 
-      <Container sx={{ py: { xs: 6, md: 10 } }}>
-        {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-            <CircularProgress sx={{ color: BRAND.primary }} />
-          </Box>
-        ) : (
-          <Stack spacing={{ xs: 4, md: 8 }}>
-            {services.filter((s) => s.is_active).map((s, i) => (
-              <Card
-                key={s.id}
-                component={motion.div}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-                sx={{
-                  border: `1px solid ${BRAND.light}`,
-                  overflow: 'hidden',
-                  transition: 'all 0.3s',
-                  '&:hover': { boxShadow: SHADOW.cardHover },
-                }}
+      {/* Service blocks — alternating photo / content like SolarSquare */}
+      <Box sx={{ py: { xs: 8, md: 12 }, px: 2 }}>
+        <Container maxWidth="lg">
+          <Stack spacing={{ xs: 6, md: 10 }}>
+            {SERVICES.map((s, i) => (
+              <Grid
+                key={s.title}
+                container
+                spacing={{ xs: 3, md: 7 }}
+                sx={{ alignItems: "center", flexDirection: { md: i % 2 ? "row-reverse" : "row" } }}
               >
-                <Grid container>
-                  <Grid
-                    size={{ xs: 12, md: 5 }}
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <Box
                     sx={{
-                      order: { xs: 2, md: i % 2 === 0 ? 1 : 2 },
-                      background: `linear-gradient(135deg, ${BRAND.primary} 0%, ${BRAND.secondary} 100%)`,
-                      color: 'white',
-                      p: { xs: 4, md: 6 },
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'center',
+                      borderRadius: "24px",
+                      minHeight: { xs: 240, md: 360 },
+                      backgroundImage: `linear-gradient(180deg, rgba(7,26,64,0) 55%, rgba(7,26,64,0.6) 100%), url('${s.image}')`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      boxShadow: "0 24px 60px rgba(11,37,89,0.18)",
+                    }}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <Box
+                    sx={{
+                      width: 56,
+                      height: 56,
+                      borderRadius: "14px",
+                      bgcolor: NAVY,
+                      color: YELLOW,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      mb: 2,
                     }}
                   >
-                    <Box
-                      sx={{
-                        width: 72,
-                        height: 72,
-                        borderRadius: 3,
-                        bgcolor: 'rgba(255,255,255,0.15)',
-                        backdropFilter: 'blur(10px)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        mb: 3,
-                      }}
-                    >
-                      <Box sx={{ '& svg': { fontSize: 40 } }}>{getMappedIcon(s.icon ?? 'solar_power')}</Box>
+                    {s.icon}
+                  </Box>
+                  <Typography sx={{ fontWeight: 800, color: NAVY, fontSize: { xs: "1.6rem", md: "2.1rem" }, lineHeight: 1.15, mb: 1.5 }}>
+                    <Box component="span" sx={{ color: BLUE, mr: 1 }}>
+                      #{i + 1}
                     </Box>
-                    <Typography variant="h4" sx={{ fontWeight: 800, mb: 2 }}>
-                      {s.title}
-                    </Typography>
-                    <Typography variant="body1" sx={{ opacity: 0.9, lineHeight: 1.7 }}>
-                      {s.short_description}
-                    </Typography>
-                  </Grid>
-
-                  <Grid size={{ xs: 12, md: 7 }} sx={{ order: { xs: 1, md: i % 2 === 0 ? 2 : 1 } }}>
-                    <CardContent sx={{ p: { xs: 4, md: 6 } }}>
-                      <Typography variant="body1" sx={{ color: 'text.secondary', lineHeight: 1.8, mb: 3 }}>
-                        {s.full_description || s.short_description}
-                      </Typography>
-
-                      {s.features && s.features.length > 0 && (
-                        <>
-                          <Typography variant="h6" sx={{ fontWeight: 700, color: 'text.primary', mb: 2 }}>
-                            What's Included
-                          </Typography>
-                          <Grid container spacing={1.5}>
-                            {s.features.map((f) => (
-                              <Grid size={{ xs: 12, sm: 6 }} key={f}>
-                                <Stack direction="row" spacing={1} sx={{ alignItems: 'flex-start' }}>
-                                  <CheckCircle
-                                    sx={{ fontSize: 20, color: BRAND.success, mt: '2px', flexShrink: 0 }}
-                                  />
-                                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                                    {f}
-                                  </Typography>
-                                </Stack>
-                              </Grid>
-                            ))}
-                          </Grid>
-                        </>
-                      )}
-
-                      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 4 }}>
-                        <Button
-                          component={RouterLink}
-                          to="/contact"
-                          variant="contained"
-                          endIcon={<ArrowForward />}
-                          sx={{
-                            bgcolor: BRAND.primary,
-                            py: 1.2,
-                            px: 3,
-                            '&:hover': { bgcolor: BRAND.primaryDark },
-                          }}
-                        >
-                          Get Quote
-                        </Button>
-                        <Button
-                          href={`tel:${settings.phone_1?.replace(/\s/g, '') || '+917774855501'}`}
-                          variant="outlined"
-                          startIcon={<Phone />}
-                          sx={{
-                            borderColor: BRAND.primary,
-                            color: BRAND.primary,
-                            py: 1.2,
-                            px: 3,
-                            '&:hover': { bgcolor: `${BRAND.primary}10` },
-                          }}
-                        >
-                          Call Now
-                        </Button>
-                      </Stack>
-                    </CardContent>
-                  </Grid>
+                    {s.title}
+                  </Typography>
+                  <Typography sx={{ color: MUTED, mb: 3 }}>{s.description}</Typography>
+                  <Stack spacing={1.3}>
+                    {s.features.map((f) => (
+                      <Box key={f} sx={{ display: "flex", gap: 1.5 }}>
+                        <CheckCircleIcon sx={{ color: BLUE, fontSize: 22 }} />
+                        <Typography>{f}</Typography>
+                      </Box>
+                    ))}
+                  </Stack>
                 </Grid>
-              </Card>
+              </Grid>
             ))}
-
-            {!services.length && (
-              <Box sx={{ textAlign: 'center', py: 8 }}>
-                <Typography variant="h6" sx={{ color: 'text.secondary' }}>
-                  No services available yet.
-                </Typography>
-              </Box>
-            )}
           </Stack>
-        )}
-      </Container>
-
-      <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: 'action.hover' }}>
-        <Container>
-          <Card sx={{ p: { xs: 3, md: 5 }, textAlign: 'center', bgcolor: 'primary.dark', color: 'primary.contrastText' }}>
-            <Typography variant="h4" sx={{ fontWeight: 800, mb: 2 }}>
-              {content['cta.title'] || 'Let’s find the right solar solution for you.'}
-            </Typography>
-            <Typography variant="body1" sx={{ opacity: 0.9, mb: 3 }}>
-              {content['cta.subtitle'] || 'Tell us a little about your home or business and our team will help you decide what to do next.'}
-            </Typography>
-            <Chip
-              component="a"
-              href={`https://wa.me/${settings.whatsapp_1 || '917774855501'}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              label={content['cta.button'] || 'Chat on WhatsApp'}
-              clickable
-              sx={{
-                bgcolor: BRAND.accent,
-                color: BRAND.dark,
-                fontWeight: 700,
-                py: 3,
-                px: 4,
-                fontSize: '1rem',
-                '&:hover': { bgcolor: '#E5A200' },
-              }}
-            />
-          </Card>
         </Container>
       </Box>
+
+      {/* Process */}
+      <Box sx={{ py: { xs: 8, md: 12 }, px: 2, backgroundColor: SOFT }}>
+        <Container maxWidth="lg">
+          <SectionHead
+            eyebrow="HOW IT WORKS"
+            title="Five simple steps from enquiry to installation"
+          />
+          <Grid container spacing={2.5}>
+            {PROCESS_STEPS.map((p) => (
+              <Grid key={p.step} size={{ xs: 12, sm: 6, md: 2.4 }}>
+                <Card elevation={0} sx={{ p: 3, height: "100%", borderRadius: "18px", border: `1px solid ${LINE}` }}>
+                  <Box
+                    sx={{
+                      width: 42,
+                      height: 42,
+                      borderRadius: "50%",
+                      bgcolor: YELLOW,
+                      color: INK,
+                      fontWeight: 800,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      mb: 2,
+                    }}
+                  >
+                    {p.step}
+                  </Box>
+                  <Typography sx={{ fontWeight: 800, color: NAVY, mb: 0.5 }}>{p.title}</Typography>
+                  <Typography variant="body2" sx={{ color: MUTED }}>
+                    {p.description}
+                  </Typography>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
+      </Box>
+
+      {/* Service areas */}
+      <Box sx={{ py: { xs: 8, md: 10 }, px: 2 }}>
+        <Container maxWidth="lg">
+          <SectionHead
+            eyebrow="WE SERVE ACROSS MAHARASHTRA"
+            title={`Solar experts in ${SITE_INFO.serviceAreas.length}+ cities`}
+            sub="Dedicated installation and service teams close to you."
+          />
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.2, justifyContent: "center" }}>
+            {SITE_INFO.serviceAreas.map((area) => (
+              <Chip
+                key={area}
+                label={area}
+                sx={{ bgcolor: SOFT, color: NAVY, fontWeight: 700, border: `1px solid ${LINE}`, px: 0.5 }}
+              />
+            ))}
+          </Box>
+        </Container>
+      </Box>
+
+      <CtaBand
+        title="Ready to go solar?"
+        line={`Call ${SITE_INFO.phone} or email ${SITE_INFO.email}`}
+      >
+        <Button
+          component={RouterLink}
+          to="/contact"
+          size="large"
+          variant="contained"
+          endIcon={<ArrowForwardIcon />}
+          sx={btn("yellow")}
+        >
+          Book Free Visit
+        </Button>
+      </CtaBand>
     </Box>
   );
 }

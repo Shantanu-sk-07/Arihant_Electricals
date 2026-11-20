@@ -1,87 +1,174 @@
-export interface SiteSetting {
-  id: string;
-  key: string;
-  value: string | null;
-}
+export type ContentSection =
+  | "hero"
+  | "stats"
+  | "whyus"
+  | "testimonials"
+  | "faq"
+  | "footer";
 
-export interface SiteContent {
-  id: string;
-  page: string;
-  section: string;
-  key: string;
-  value: string | null;
-}
-
-export interface Media {
-  id: string;
-  title: string;
-  description: string | null;
-  type: 'image' | 'video';
-  url: string;
-  thumbnail_url: string | null;
-  sort_order: number;
-  created_at: string;
-}
-
-export interface Contact {
-  id: string;
-  name: string;
-  email: string;
-  phone: string | null;
+export interface ApiResponse<T> {
+  success: boolean;
+  data: T | null;
   message: string;
-  is_read: boolean;
-  created_at: string;
 }
 
-export interface Service {
-  id: string;
-  title: string;
-  short_description: string | null;
-  full_description: string | null;
-  icon: string | null;
-  image_url: string | null;
-  features: string[] | null;
-  sort_order: number;
-  is_active: boolean;
-  created_at: string;
-}
-
-export interface Testimonial {
-  id: string;
-  name: string;
-  location: string | null;
-  rating: number;
+export interface ApiError {
+  status: number;
   message: string;
-  image_url: string | null;
-  sort_order: number;
-  is_active: boolean;
-  created_at: string;
+  timestamp: string;
+  path: string;
 }
 
-export interface PricingPlan {
-  id: string;
-  kw: number;
-  system_type: string | null;
-  total_cost: number;
-  subsidy_amount: number;
-  final_cost: number;
-  monthly_savings: number | null;
-  panels_count: number | null;
-  area_required: string | null;
-  is_popular: boolean;
-  sort_order: number;
-  is_active: boolean;
-  created_at: string;
+export interface HeroContent {
+  headline: string;
+  subheadline: string;
+  ctaPrimary: string;
+  ctaSecondary: string;
+  imageUrl: string;
 }
 
-export interface SolarBenefit {
-  id: string;
+export interface StatItem {
+  label: string;
+  value: number;
+  suffix: string;
+}
+
+export interface StatsContent {
+  items: StatItem[];
+}
+
+export interface WhyUsItem {
   title: string;
   description: string;
-  icon: string | null;
-  stat_value: string | null;
-  stat_label: string | null;
-  sort_order: number;
-  is_active: boolean;
-  created_at: string;
+  icon: string;
+}
+
+export interface WhyUsContent {
+  heading: string;
+  items: WhyUsItem[];
+}
+
+export interface TestimonialItem {
+  name: string;
+  location: string;
+  quote: string;
+  rating: number;
+  avatarUrl: string;
+}
+
+export interface TestimonialsContent {
+  heading: string;
+  googleRating: number;
+  googleReviews: number;
+  items: TestimonialItem[];
+}
+
+export interface FaqItem {
+  question: string;
+  answer: string;
+}
+
+export interface FaqContent {
+  heading: string;
+  items: FaqItem[];
+}
+
+export interface FooterContent {
+  aboutText: string;
+  quickLinks: { label: string; to: string }[];
+  certifications: string[];
+}
+
+export type SectionContent =
+  | HeroContent
+  | StatsContent
+  | WhyUsContent
+  | TestimonialsContent
+  | FaqContent
+  | FooterContent;
+
+export interface SiteContent {
+  section: ContentSection;
+  content: SectionContent;
+  updatedAt: string;
+}
+
+export interface MediaAsset {
+  id: number;
+  url: string;
+  publicId: string;
+  type: "image" | "video";
+  title: string;
+  uploadedAt: string;
+}
+
+export interface Lead {
+  id: number;
+  name: string;
+  phone: string;
+  pincode: string;
+  monthlyBill: number;
+  message: string;
+  status: "new" | "contacted" | "closed";
+  createdAt: string;
+}
+
+export interface LeadRequest {
+  name: string;
+  phone: string;
+  pincode: string;
+  monthlyBill: number;
+  message: string;
+}
+
+export interface CalculatorRequest {
+  pincode: string;
+  monthlyBill: number;
+}
+
+export interface CalculatorResult {
+  serviceable: boolean;
+  systemSizeKw: number;
+  subsidy: number;
+  systemCost: number;
+  netCost: number;
+  monthlySavings: number;
+  annualSavings: number;
+  paybackYears: number;
+  co2OffsetTonnes: number;
+}
+
+export interface SubsidySlab {
+  minKw: number;
+  maxKw: number;
+  amount: number;
+}
+
+export interface CalculatorSettings {
+  tariffPerUnit: number;
+  sunHoursPerDay: number;
+  costPerKw: number;
+  subsidySlabs: SubsidySlab[];
+  servicePincodes: string[];
+}
+
+export interface AdminUser {
+  id: number;
+  username: string;
+  role: "ADMIN" | "EDITOR";
+}
+
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  token: string;
+  user: AdminUser;
+}
+
+export interface ContentUpdateRequest {
+  section: ContentSection;
+  content: SectionContent;
 }
