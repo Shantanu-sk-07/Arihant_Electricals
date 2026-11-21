@@ -26,6 +26,7 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "react", "routes", "routes", "routes", "routes"],
+  "include": ["src", "react", "routes"],
+  "exclude": ["src/containers/URLsView.tsx"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

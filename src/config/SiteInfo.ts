@@ -75,12 +75,12 @@ export const SITE_INFO: SiteInfo = {
   primaryColor: "#0B6B3A",
   accentColor: "#F5A623",
 
-  email: "contact@arihantelectricals.in",
-  supportEmail: "support@arihantelectricals.in",
-  phone: "+91-98765-43210",
-  phoneRaw: "919876543210",
-  whatsapp: "+91-98765-43210",
-  whatsappRaw: "919876543210",
+  email: "kumbharsuraj108@gmail.com",
+  supportEmail: "arihantelectricals159@gmail.com",
+  phone: "+917774855501",
+  phoneRaw: "917774855501",
+  whatsapp: "+917774855501",
+  whatsappRaw: "917774855501",
   workingHours: "Mon–Sat, 9:00 AM – 7:00 PM IST",
 
   address: {

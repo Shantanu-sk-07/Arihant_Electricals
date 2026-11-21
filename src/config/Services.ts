@@ -73,9 +73,7 @@ async function request<T>(
       if (err?.message) {
         message = err.message;
       }
-    } catch {
-      /* non-json error body */
-    }
+    } catch { /* empty */ }
     throw new Error(message);
   }
 
@@ -85,10 +83,6 @@ async function request<T>(
 
   return (await response.json()) as T;
 }
-
-/* ------------------------------------------------------------------ */
-/* Public endpoints                                                    */
-/* ------------------------------------------------------------------ */
 
 export async function fetchPublicContent<T extends SectionContent>(
   section: ContentSection
@@ -116,14 +110,42 @@ export async function calculateSavings(
 }
 
 export async function submitLead(payload: LeadRequest): Promise<Lead> {
-  const res = await request<ApiResponse<Lead>>("/leads", {
-    method: "POST",
-    body: payload,
-  });
-  if (!res.success || !res.data) {
-    throw new Error(res.message || "Could not submit enquiry");
+  const FORMSPREE_ENDPOINT = "https://formspree.io/f/mljbwwra";
+
+  try {
+    await fetch(FORMSPREE_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        name: payload.name,
+        phone: payload.phone,
+        message: payload.message,
+      }),
+    });
+  } catch{
+    console.warn("Formspree failed, but proceeding to WhatsApp.");
   }
-  return res.data;
+
+  const vendorNumber = "917774855501";
+  
+  const formattedMessage = 
+    `*Name:* ${payload.name}\n` +
+    `*Phone:* ${payload.phone}\n` +
+    `*Msg:* ${payload.message || "N/A"}`;
+
+  const textMessage = encodeURIComponent(formattedMessage);
+
+  window.open(`https://wa.me/${vendorNumber}?text=${textMessage}`, "_blank");
+
+  return {
+    ...payload,
+    id: Date.now(),
+    status: "new",
+    createdAt: new Date().toISOString(),
+  } as unknown as Lead;
 }
 
 export async function fetchMedia(): Promise<MediaAsset[]> {
@@ -133,10 +155,6 @@ export async function fetchMedia(): Promise<MediaAsset[]> {
   }
   return res.data;
 }
-
-/* ------------------------------------------------------------------ */
-/* Auth                                                                */
-/* ------------------------------------------------------------------ */
 
 export async function adminLogin(
   payload: LoginRequest
@@ -155,10 +173,6 @@ export async function adminLogin(
 export function adminLogout(): void {
   tokenStore.clear();
 }
-
-/* ------------------------------------------------------------------ */
-/* Admin — content                                                     */
-/* ------------------------------------------------------------------ */
 
 export async function fetchAllAdminContent(): Promise<SiteContent[]> {
   const res = await request<ApiResponse<SiteContent[]>>("/admin/content", {
@@ -182,10 +196,6 @@ export async function updateContent(
   }
   return res.data;
 }
-
-/* ------------------------------------------------------------------ */
-/* Admin — media                                                       */
-/* ------------------------------------------------------------------ */
 
 export async function fetchAdminMedia(): Promise<MediaAsset[]> {
   const res = await request<ApiResponse<MediaAsset[]>>("/admin/media", {
@@ -226,10 +236,6 @@ export async function deleteMedia(id: number): Promise<void> {
   }
 }
 
-/* ------------------------------------------------------------------ */
-/* Admin — leads                                                       */
-/* ------------------------------------------------------------------ */
-
 export async function fetchLeads(): Promise<Lead[]> {
   const res = await request<ApiResponse<Lead[]>>("/admin/leads", {
     auth: true,
@@ -268,10 +274,6 @@ export async function updateLeadStatus(
 export function leadsExportUrl(): string {
   return `${API_BASE}/admin/leads/export`;
 }
-
-/* ------------------------------------------------------------------ */
-/* Admin — calculator settings                                         */
-/* ------------------------------------------------------------------ */
 
 export async function fetchCalculatorSettings(): Promise<CalculatorSettings> {
   const res = await request<ApiResponse<CalculatorSettings>>(

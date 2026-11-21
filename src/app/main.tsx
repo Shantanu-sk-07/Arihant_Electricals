@@ -1,18 +1,13 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
-import { BrowserRouter } from "react-router-dom";
-import App from "./App";
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { CssBaseline } from '@mui/material';
+import App from './App';
+import '@/i18n';
+import './index.css';
 
-const rootElement = document.getElementById("root");
-
-if (!rootElement) {
-  throw new Error("Root element not found");
-}
-
-ReactDOM.createRoot(rootElement).render(
-  <React.StrictMode>
-    <BrowserRouter>
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <CssBaseline />
       <App />
-    </BrowserRouter>
-  </React.StrictMode>
+  </StrictMode>
 );

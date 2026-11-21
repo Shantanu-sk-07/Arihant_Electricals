@@ -168,28 +168,26 @@ const DropdownField: FC<DropdownFieldProps> = ({
               clearOnBlur={editable}
               handleHomeEndKeys={editable}
               renderInput={(params: AutocompleteRenderInputParams) => (
-               <TextField
-  {...params}
-  {...field}
-  {...rest}
-  size={size}
-  inputRef={ref}
-  label={label}
-  placeholder={placeholder}
-  error={!!get(errors, name)}
-  required={required}
-  slotProps={{
-    ...params.slotProps,
-    inputLabel: {
-      ...params.slotProps?.inputLabel,
-      shrink: true,
-    },
-    htmlInput: {
-      ...params.slotProps?.htmlInput,
-      readOnly: !editable,
-    },
-  }}
-/>
+                <TextField
+                  {...params}
+                  {...field}
+                  {...rest}
+                  size={size}
+                  inputRef={ref}
+                  label={label}
+                  placeholder={placeholder}
+                  error={!!get(errors, name)}
+                  required={required}
+                  slotProps={{
+                    inputLabel: {
+                      shrink: true,
+                    },
+                    htmlInput: {
+                      ...params.inputProps,
+                      readOnly: !editable,
+                    },
+                  }}
+                />
               )}
             />
             <FormHelperText sx={{ mt: 0.5, mx: 0 }}>
